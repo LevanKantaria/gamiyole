@@ -7,7 +7,7 @@ Every driver must create a profile where they should upload: Contact info, Car p
 Passengers can give rating to drivers and leave comments on their profile.
 
 Problems solved: 
-1) drivers save money by taking passangers.
-2) Passengers avoind busy public transport. 
+1) Drivers save money by taking passangers.
+2) Passengers avoid busy public transport. 
 
 Eveyone is happy
