@@ -1,0 +1,35 @@
+.wrap{
+   max-width: 95vw;
+   border: solid;
+   border-color: rgb(66 , 103, 178); ;  
+   margin: auto;
+   
+   border-radius: 5px;
+    
+   
+}
+
+
+.carouselItem{
+   max-height: 25vh;
+}
+
+.button{
+   z-index: 10;
+   display: flex;
+   position: absolute;
+   background-color: rgba(240, 63, 10, 0.945);
+   border: none;
+   margin-right: 0px;
+   margin-left: auto;
+   top: 0px;
+   right: 0px;
+   border-radius: 10px;
+}
+
+
+.deleted{
+   color: rgb(211, 34, 34);
+   position: absolute;
+   background-color: rgb(134, 224, 75);
+}

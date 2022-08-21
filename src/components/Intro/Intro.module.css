@@ -1,0 +1,58 @@
+.maindiv {
+  background-color: rgba(255, 255, 255, 0.164);
+  background-size: 100%;
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/CarPool-vector.jpg?alt=media&token=801be200-c167-4ffa-86dc-1ef90accc555");
+  height: 50vh;
+  animation: fadeIn 0.2s ease-in forwards;
+  margin: auto;
+  background-size: cover;
+background-position: center;
+  margin-bottom: 4vw;
+  max-height: 50vh;
+}
+
+.maindiv h1 {
+  position: relative;
+  top: 40vh;
+}
+.footer {
+  position: relative;
+  height: 10vh;
+  bottom: 0;
+  width: 100%;
+  background-color: rgba(46, 43, 43, 0.39);
+  color: white;
+  text-align: center;
+  margin-top: 400px;
+  margin-bottom: 1px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+h6 {
+  margin-top: 4.5vh;
+}
+
+@media only screen and (max-width: 768px) {
+  /* For mobile phones: */
+  .maindiv {
+    background-color: rgba(255, 255, 255, 0.164);
+    background-size: 100%;
+    background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/1261811806-vector.jpg?alt=media&token=2bb29e6a-3ffe-4a63-8096-32cf40b9fa33");
+    background-repeat: no-repeat;
+    height: 30vh;
+    animation: fadeIn 0.2s ease-in forwards;
+    background-position: top;
+  }
+  .maindiv h1 {
+    position: relative;
+    top: 1vh;
+  }
+}

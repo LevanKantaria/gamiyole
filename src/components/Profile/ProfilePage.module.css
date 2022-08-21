@@ -1,0 +1,84 @@
+.wrapper{
+    display: block;
+    max-width: 600px;
+    
+
+}
+
+.edit{
+    display: flex;
+    justify-content: space-evenly;
+
+}
+.top{
+display: flex;
+height: 25vh;
+width: 95%;
+padding: 5px;
+margin: 5px;
+margin: auto;
+background-color: rgba(238, 230, 230, 0.719);
+z-index: 0;
+}
+
+.topleft{
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    height: 100%;
+    width: 65%;
+    border: solid;
+    border-radius: 5px;
+    margin: auto;
+    border-color: rgba(219, 109, 105, 0.384);
+    background-color: rgb(255, 255, 255);
+
+}
+
+
+
+
+.topright img{
+    max-width: 40vw;
+    max-height: 24vh;
+   
+	border: solid;
+    border-color: rgba(105, 219, 124, 0.384);
+}
+.mid{
+	background-color: rgba(211, 208, 195, 0.096);
+	width: auto;
+	margin:auto;
+	margin-top: 20px;
+	height: 30vh;
+
+}
+
+
+
+.bottom{
+    background-color: rgb(255, 255, 255);
+	width: 95%;
+	margin:auto;    
+	margin-top: 40px;
+	height: 30vh;
+    border: solid;
+    border-radius: 10px;
+    border-color:rgb(66 , 103, 178);
+
+}
+
+.customButton{
+    display: block;
+        width: auto;
+        height: 2rem;
+        color: rgb(255, 255, 255);
+        border-radius: 5px;
+        border:0px;
+        background-color: rgba(93, 211, 128, 0.925);
+        font-size: large;
+    
+}
+
+

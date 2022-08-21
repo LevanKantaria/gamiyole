@@ -1,0 +1,121 @@
+.wrapper {
+  background-color: rgba(255, 255, 255, 0.774);
+  border-radius: 20px;
+
+  max-width: 800px;
+  margin: auto;
+}
+
+.mainDiv {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profileImage {
+  position: relative;
+  top: 1vh;
+  margin: 25px auto 10px 40px;
+}
+.edit {
+  display: flex;
+
+  align-content: flex-end;
+  width: fit-content;
+  margin-right: 15px;
+  margin-left: auto;
+}
+
+.nameAndRating {
+  display: flex;
+  flex-direction: column;
+  margin: 20px auto 30px 40px;
+
+  align-items: flex-start;
+}
+.nameAndRating div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding-right: 10px;
+  width: 300px;
+}
+.nameAndRating div div {
+  margin-left: 15px;
+}
+
+.infoTitle {
+  width: 90vw;
+  max-width: 800px;
+  margin: auto;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: solid;
+  border-color: rgb(217, 219, 221);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.info {
+  margin-top: 10px;
+  font-size: larger;
+  position: relative;
+  top: -3px;
+}
+
+button{
+  background-color: none;
+}
+button:hover{
+  background-color: rgba(245, 222, 179, 0);
+}
+.customButton {
+  background-color: rgba(240, 248, 255, 0);
+  height: 45px;
+
+  border: none;
+}
+.customButton :hover{
+  
+  height: 40px;
+ width: 35px;
+  border-radius: 10px;
+
+}
+.plateBackground {
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/georgia-country-european-license-plate.jpg?alt=media&token=1dbb3107-6241-4456-9e97-77b843aaaca8");
+  display: flex;
+  justify-content: space-around;
+  background-color: rgb(240, 233, 233);
+  width: 175px;
+  background-repeat: no-repeat;
+  align-items: center;
+  font-weight: 800;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  margin: auto;
+}
+
+.profilePicEditButton {
+  position: relative;
+  width: 20%;
+  top: -30px;
+  left: 65px;
+  margin: auto;
+  
+  
+}
+
+.carouselImgae {
+  max-height: 10vh;
+}
+
+.carPicEditButton {
+  position: relative;
+  margin-top: 1vh;
+}
+
+.feedback {
+  margin: 5px 3vw 10px 3vw;
+}

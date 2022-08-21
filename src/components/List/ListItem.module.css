@@ -1,0 +1,221 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+ 
+  width: 80%;
+  height: auto;
+  border-radius: 10px;
+  background-color: #ffffff73;
+
+  padding: 1rem;
+  padding-right: 1rem;
+  justify-content: space-between;
+  font-size: large;
+  margin: auto;
+
+  margin-top: 30px;
+  margin-bottom: 40px;
+  border-bottom: solid 2px #8ECAE6;
+  
+
+  animation: openItem 0.3s ease-out forwards;
+  max-width: 780px;
+  box-shadow: #8ECAE6 0px 5px 15px;
+}
+.price {
+  background-color: #FFB703;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: 1px;
+  margin-left: 20px;
+}
+
+.topDiv{
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  
+}
+.topDiv div ul li {
+  
+  font-weight: 600;
+  width: fit-content;
+  margin-left: 30px;
+  
+}
+.botDiv{
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+ 
+}
+.botDiv div{
+  display: flex;
+  margin: 10px;
+  align-items: center;
+}
+
+.arrow{
+    position: relative;
+    left: -31px;
+    animation: arrow 1s ease-in-out infinite;
+  
+}
+.departureTime{
+  position: relative;
+  left: -60px;
+  top: 26px;
+  font-size: smaller;
+  font-family:'Times New Roman', Times, serif
+}
+
+.greyDiv{
+  background-color: rgba(128, 128, 128, 0.089);
+  width: fit-content;
+  margin: auto;
+  border-radius: 10px;
+  padding: 30px 40px 30px 40px;
+}
+
+@keyframes arrow {
+  0%{
+   opacity: 0;
+   transform: translateY(-20px)  
+  } 
+ 
+  
+  80%{
+   opacity: 1;
+   transform: translateY(10px)
+  } 
+ 
+  100%{
+   opacity: 0.5;
+   transform: translateY(10px)
+  } 
+ }
+
+
+
+
+.animated {
+  color: red;
+  animation: pulse 1s ease-in-out;
+}
+
+.arrow{
+  animation: arrow 1s ease-in-out infinite;
+}
+
+.remove{
+  animation: remove 0.5s ease-in forwards;
+}
+
+@keyframes openItem {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes headShake {
+  0% {
+    transform: translateX(0);
+  }
+
+  12.5% {
+    transform: translateX(-6px) rotateY(-9deg) skewY(1deg);
+  }
+
+  37.5% {
+    transform: translateX(5px) rotateY(4.5deg) skewY(-1deg);
+  }
+
+  62.5% {
+    transform: translateX(-3px) rotateY(-2.25deg) skewY(0);
+  }
+
+  87.5% {
+    transform: translateX(2px) rotateY(3deg);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+
+@keyframes arrow {
+  0%{
+    opacity: 0;
+    transform: translateY(-20px)  
+   } 
+  
+   
+   80%{
+    opacity: 1;
+    transform: translateY(10px)
+   } 
+  
+   100%{
+    opacity: 0.5;
+    transform: translateY(10px)
+   } 
+}
+
+@keyframes hover{
+  0%{
+    transform : scale(1);
+  }
+  100%{
+    transform : scale(1.3);
+  }
+}
+
+@keyframes pulse {
+  0%{
+    opacity: 0;
+    transform: scale(1);
+  }
+  50%{
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  
+  100%{
+    opacity: 0;
+    transform: scale(1);
+  }
+  
+}
+
+@keyframes remove {
+  0%{
+    opacity: 1;
+    transform: translateX(0px);
+  }
+  25%{
+    opacity: 1;
+    transform: translateX(40px);
+  }
+  100%{
+    opacity: 0;
+    transform: translateX(-400px);
+
+  }
+}
+
+

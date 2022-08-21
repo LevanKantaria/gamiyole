@@ -1,0 +1,37 @@
+.div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: rgb(255, 255, 255);
+    border: solid;
+    border-width: 1px;
+    border-color: rgb(125, 152, 177);
+    border-radius: 10px;
+    padding: 5px;
+    margin: auto;
+    margin-bottom: 150px;
+    width: 90%;
+    max-width: 600px;
+
+}
+
+.comment{
+    border-bottom: solid;
+    border-width: 1px;
+    margin: 2px;
+}
+
+.placeholder{
+margin: 15px 0px 3px 0px;
+}
+
+.noComments{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+    margin: auto;
+    padding: 5px;
+    color: grey;
+   
+}

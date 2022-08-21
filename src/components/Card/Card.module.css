@@ -1,0 +1,53 @@
+.card{
+    background-color: rgba(253, 253, 255, 0);
+    width: 80%;
+    height: 10vh;
+    border-radius: 2px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    color: rgb(33, 134, 218);
+    font-weight: 800;
+    
+    justify-content: center;
+    font-size: 2rem;
+    margin: auto;
+    
+    
+
+}
+
+h1{
+    position: relative;
+    top:35vh
+}
+
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    .card{
+        background-color: rgba(253, 253, 255, 0);
+        width: 90%;
+        height: 8vh;
+        border-radius: 2px;
+        font-weight: 800;
+        
+        display: flex;
+        align-items: center;
+        color: rgb(33, 134, 218);
+        font-weight: 400;
+        
+        justify-content: center;
+        
+        font-size: x-large;
+       
+        padding-top: 0px;
+        margin: auto;
+        
+        margin-bottom: 30vw;
+    
+    }
+    h1{
+        position: relative;
+        top:0px
+    }
+    }
