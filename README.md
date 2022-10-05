@@ -35,7 +35,7 @@ Everyone is happy
 </ul>  
  <ul> <h2> Tools Used to achieve Project Goals  </h2>
 <li>React </li>
-<li>react-router-rom</li>
+<li>react-router-dom</li>
 <li> Redux/toolkit,</li>
 <li>Firebase Realtime Database,</li>
 <li>Firebase Storage, OAuth2.0, </li>
