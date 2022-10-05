@@ -3,11 +3,11 @@
 
 <h1> About the App </h1>
 
-This project was created to aid InterCity transportation. Users can Publish or Find drivers from one city to another.
+ <p> This project was created to aid InterCity transportation. Users can Publish or Find drivers from one city to another.
 
 High gas price is a big problem for drivers. Sometimes people drive on long roads without any passengers. It would be great if Drivers could find someone who can accompany them and share Gas payment. This will make travelling cheaper and more enjoyable. Every driver must create a profile where they should upload: Contact info, Car pictures, Profile Picture. Passengers can give rating to drivers and leave comments on their profile.
-
-<ul>Solved problems and benefits of Gamiyole 
+ </p>
+<ul> <h2> Solved problems and benefits of Gamiyole  </h2>
 
  <li> Drivers save money by taking passengers. </li>
  <li>Passengers avoid busy public transport. </li>
@@ -16,7 +16,7 @@ High gas price is a big problem for drivers. Sometimes people drive on long road
 
 Everyone is happy
 
- Live Preview :  www.gamiyole.me
+ <h3> Live Preview :  www.gamiyole.me </h3>
 ![Alt text](/public/Screenshot_7.jpg?raw=true "Preview ")
 ![Alt text](/public/Screenshot_1.jpg?raw=true "Preview ")
 
@@ -34,7 +34,7 @@ Passengers avoid busy public transport.
 
 Everyone is happy
 
-<ul>Features 
+ <ul> <h2>Features  </h2>
 <li> Finding Published routes by Filtering Cities and Date; </li>
 <li> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );</li>
 <li> Commenting and Rating Other People's profiles; </li>
@@ -47,4 +47,4 @@ Everyone is happy
 <li>Firebase Storage, OAuth2.0, </li>
 <p>Components are written with plain HTML and CSS. </p>
 </ul> 
-gamiyole.me
+
