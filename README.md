@@ -27,8 +27,10 @@ Everyone is happy
 
 
  <ul> <h2>Features  </h2>
+ 
 <li> Finding Published routes by Filtering Cities and Date; </li>
 <li> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );</li>
+  <li> Publishing your own routes </li>
 <li> Commenting and Rating Other People's profiles; </li>
 </ul>  
  <ul> <h2> Tools Used to achieve Project Goals  </h2>
