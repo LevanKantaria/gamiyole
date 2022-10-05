@@ -15,5 +15,6 @@ Passengers avoid busy public transport.
 Everyone is happy
 
 
+Tools Used to achieve Project Goals: React, React-Router, Redux/toolkit, Firebase Realtime Database, Firebase Storage, OAuth2.0, Components are written with plain HTML and CSS. 
 
 gamiyole.me
