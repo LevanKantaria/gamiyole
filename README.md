@@ -18,8 +18,9 @@ Everyone is happy
 
  <h3> Live Preview :  www.gamiyole.me </h3>
  <img src="/public/Screenshot_7.jpg" alt="preview" />
-![Alt text](/public/Screenshot_7.jpg?raw=true "Preview ")
-![Alt text](/public/Screenshot_1.jpg?raw=true "Preview ")
+  <img src="/public/Screenshot_1.jpg" alt="preview" />
+
+
 
 
 
