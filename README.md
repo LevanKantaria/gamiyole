@@ -3,7 +3,6 @@
  Live Preview :  www.gamiyole.me
 ![Alt text](/public/Screenshot_7.jpg?raw=true "Preview ")
 
-![Alt text](https://freeimage.host/i/QqqaUP "Optional title")
 
 This project was created to aid InterCity transportation. Users can Publish or Find drivers from one city to another.
 
