@@ -31,7 +31,7 @@ Everyone is happy
 <li> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );</li>
 <li> Commenting and Rating Other People's profiles; </li>
 </ul>  
- <ul> Tools Used to achieve Project Goals 
+ <ul> <h2> Tools Used to achieve Project Goals  </h2>
 <li>React </li>
 <li>react-router-rom</li>
 <li> Redux/toolkit,</li>
