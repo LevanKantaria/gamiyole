@@ -14,7 +14,11 @@ Passengers avoid busy public transport.
 
 Everyone is happy
 
-
+Features: 
+<> Finding Published routes by Filtering Cities and Date;
+<> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );
+<> Commenting and Rating Other People's profiles; 
+<>  
 Tools Used to achieve Project Goals: React, React-Router, Redux/toolkit, Firebase Realtime Database, Firebase Storage, OAuth2.0, Components are written with plain HTML and CSS. 
 
 gamiyole.me
