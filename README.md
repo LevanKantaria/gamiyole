@@ -1,7 +1,7 @@
 # gamiyole.me
 
  Live Preview :  www.gamiyole.me
-![Alt text](/relative/path/to/screenshot_7.jpg?raw=true "Preview ")
+![Alt text](/screenshot_7.jpg?raw=true "Preview ")
 This project was created to aid InterCity transportation. Users can Publish or Find drivers from one city to another.
 
 High gas price is a big problem for drivers. Sometimes people drive on long roads without any passengers. It would be great if Drivers could find someone who can accompany them and share Gas payment. This will make travelling cheaper and more enjoyable. Every driver must create a profile where they should upload: Contact info, Car pictures, Profile Picture. Passengers can give rating to drivers and leave comments on their profile.
