@@ -1,7 +1,7 @@
 # gamiyole.me
 
  Live Preview :  www.gamiyole.me
-![Alt text](/Screenshot_7.jpg?raw=true "Preview ")
+![Alt text](/public/Screenshot_7.jpg?raw=true "Preview ")
 
 ![Alt text](https://freeimage.host/i/QqqaUP "Optional title")
 
