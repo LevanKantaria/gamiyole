@@ -17,8 +17,12 @@ High gas price is a big problem for drivers. Sometimes people drive on long road
 Everyone is happy
 
  <h3> Live Preview :  www.gamiyole.me </h3>
- <img src="/public/Screenshot_7.jpg" alt="preview" />
-  <img src="/public/Screenshot_1.jpg" alt="preview" />
+ <img src="/public/gamiyole_1.jpg" alt="preview" />
+ 
+   <img src="/public/gamiyole_2.jpg" alt="preview" />
+  <img src="/public/gamiyole_3.jpg" alt="preview" />
+   <img src="/public/Screenshot_1.jpg" alt="preview" />
+
 
 
 
