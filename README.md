@@ -16,12 +16,12 @@ High gas price is a big problem for drivers. Sometimes people drive on long road
 
 Everyone is happy
 
- <h3> Live Preview :  www.gamiyole.me </h3>
+ <h3> Live Preview : <a  href="https://factory-l.netlify.app/" </h3>
  <img src="/public/gamiyole_1.jpg" alt="preview" />
  
-   <img src="/public/gamiyole_2.jpg" alt="preview" />
-  <img src="/public/gamiyole_3.jpg" alt="preview" />
-   <img src="/public/Screenshot_1.jpg" alt="preview" />
+   <img src="https://i.ibb.co/PtWLLn9/factory-l-scr1.jpg" />
+  <img src="https://i.ibb.co/tQMcCXd/factory-l-scr2.jpg" />
+  
 
 
 
@@ -30,19 +30,4 @@ Everyone is happy
 
 
 
- <ul> <h2>Features  </h2>
- 
-<li> Finding Published routes by Filtering Cities and Date; </li>
-<li> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );</li>
-  <li> Publishing your own routes </li>
-<li> Commenting and Rating Other People's profiles; </li>
-</ul>  
- <ul> <h2> Tools Used to achieve Project Goals  </h2>
-<li>React </li>
-<li>react-router-dom</li>
-<li> Redux/toolkit,</li>
-<li>Firebase Realtime Database,</li>
-<li>Firebase Storage, OAuth2.0, </li>
-<p>Components are written with plain HTML and CSS. </p>
-</ul> 
 
