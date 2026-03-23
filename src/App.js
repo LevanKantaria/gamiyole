@@ -9,29 +9,51 @@ import { listAction } from "./components/store";
 import classes from "./App.module.css";
 import { Route, Redirect } from "react-router-dom";
 import Filter from "./components/Filter/Filter";
-import Outro from "./components/Intro/outro";
 import SignInModal from "./components/UI/SignInModal";
 import SignUpModal from "./components/UI/SignUpModal";
 import ProfilePage from "./components/Profile/ProfilePage";
 import CompleteProfile from "./components/Profile/CompleteProfile";
 import { profileActions } from "./components/store";
-import { getOptionGroupUnstyledUtilityClass } from "@mui/base";
+import { authAction } from "./components/store";
+import { onIdTokenChanged } from "firebase/auth";
+import { auth } from "./firebase/client";
+import Footer from "./components/UI/Footer";
+import AboutPage from "./components/About/AboutPage";
 
 function App() {
   const dispatch = useDispatch();
   let id = localStorage.getItem("localId");
-  let profileUrl =
-    "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/profile/" +
-    id +
-    ".json";
+  const token = useSelector((state) => state.auth.token) || localStorage.getItem("token");
+  const isGuest = token === "guest";
+  const isAuthenticated = Boolean(token) && !isGuest;
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
+
+  useEffect(() => {
+    const unsub = onIdTokenChanged(auth, async (user) => {
+      if (!user) {
+        const existing = localStorage.getItem("token");
+        if (existing && existing !== "guest") {
+          dispatch(authAction.restoreSession({ idToken: "", localId: "" }));
+        }
+        return;
+      }
+      const idToken = await user.getIdToken();
+      dispatch(authAction.restoreSession({ idToken, localId: user.uid }));
+    });
+    return () => unsub();
+  }, [dispatch]);
 
   // update profile Avatar once app is
   useEffect(() => {
+    if (!id) {
+      return;
+    }
     async function fetchImgLink() {
       const response = await fetch(
         "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/pictures/profile/" +
           id +
-          ".json"
+          ".json" +
+          authQuery
       );
       if (!response.ok) {
         throw new Error("Failed to get Pic Url");
@@ -50,23 +72,24 @@ function App() {
     }
 
     fetchImgLink();
-  });
-
-  let initial = true;
-
-  const token = useSelector((state) => state.auth.token);
+  }, [id, dispatch, authQuery]);
 
   //Get data and send it to Redux store , List of all published drives
   useEffect(() => {
     async function fetchData() {
       const response = await fetch(
-        "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list.json"
+        "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list.json" +
+          authQuery
       );
 
       if (!response.ok) {
         throw new Error("No Fetching  fiuuuck");
       }
       let data = await response.json();
+      if (!data) {
+        dispatch(listAction.loadData([]));
+        return;
+      }
 
       console.log(data);
 
@@ -92,8 +115,10 @@ function App() {
 
       return data;
     }
-    fetchData();
-  }, [initial]);
+    fetchData().catch(() => {
+      dispatch(listAction.loadData([]));
+    });
+  }, [dispatch, authQuery]);
 
   return (
     <div className={classes.index}>
@@ -111,7 +136,6 @@ function App() {
         <Filter />
 
         <List />
-        <Outro />
       </Route>
 
       <Route path="/signin"></Route>
@@ -119,8 +143,14 @@ function App() {
       <Route path="/signup">{!token && <SignUpModal />}</Route>
 
       <Route path="/submit">
-      <div className={classes.placeHolderBlue}></div>
-        <SubmitForm />
+      {!isAuthenticated ? (
+        <Redirect to="/welcome" />
+      ) : (
+        <>
+          <div className={classes.placeHolderBlue}></div>
+          <SubmitForm />
+        </>
+      )}
       </Route>
       <Route path="/find">
       <div className={classes.placeHolder}></div>
@@ -128,15 +158,19 @@ function App() {
 
         <Filter />
         <List />
-        <Outro />
       </Route>
       <Route path="/profile/:id">
       <div className={classes.placeHolder}></div>
         <ProfilePage />
       </Route>
       <Route path="/complete-profile">
-        <CompleteProfile />
+        {!isAuthenticated ? <Redirect to="/welcome" /> : <CompleteProfile />}
       </Route>
+      <Route path="/about">
+        <div className={classes.placeHolder}></div>
+        <AboutPage />
+      </Route>
+      <Footer />
     </div>
   );
 }

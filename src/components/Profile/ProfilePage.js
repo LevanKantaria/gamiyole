@@ -2,18 +2,20 @@ import classes from "./ProfilePageUpdated.module.css";
 import CarouselReact from "./CarouselReact";
 import { useParams } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { profileActions } from "../store";
 import ImageUpload from "./ImageUpload";
 import ImagesUploadCaR from "./imagesUploadCar";
-import Avatar from "@mui/material/Avatar";
 import RatingSection from "./RatingSection/RatingSection";
 import FeedbackCustom from "./Feedback/FeedbackCustom";
 import CommentsSection from "./CommentsSection/CommentsSection";
+import SectionCard from "./SectionCard";
+import ProfileHeaderCard from "./ProfileHeaderCard";
+import { useHistory } from "react-router-dom";
 
 const ProfilePage = () => {
   const lang = useSelector((state) => state.lang.lang);
+  const history = useHistory();
 
   let profilePageTxt = {
     EN: {
@@ -22,9 +24,22 @@ const ProfilePage = () => {
       phone: "Phone Number",
       carModel: 'Car Model',
       numberPlate:'Number Plate',
-      
-      
-      
+      editProfile: "Edit profile",
+      uploadProfilePic: "Profile photo",
+      uploadCarPics: "Car photos",
+      noInfo: "Not provided",
+      ageSuffix: "y/o",
+      profileTitle: "Profile",
+      hideUpload: "Hide uploader",
+      galleryTitle: "Car gallery",
+      contactTitle: "Contact",
+      carTitle: "Vehicle details",
+      aboutTitle: "About",
+      setupTitle: "Set up your profile",
+      myRoutes: "My routes",
+      noRoutes: "You have not published routes yet.",
+      edit: "Edit",
+      remove: "Remove",
     },
 
     GE: {
@@ -33,35 +48,49 @@ const ProfilePage = () => {
       phone: "ტელეფონის ნომერი",
       carModel: 'მანქანის მოდელი',
       numberPlate:'მანქანის ნომერი',
-   
+      editProfile: "პროფილის რედაქტირება",
+      uploadProfilePic: "პროფილის ფოტო",
+      uploadCarPics: "მანქანის ფოტოები",
+      noInfo: "არ არის შევსებული",
+      ageSuffix: "წლის",
+      profileTitle: "პროფილი",
+      hideUpload: "დამალვა",
+      galleryTitle: "მანქანის გალერეა",
+      contactTitle: "კონტაქტი",
+      carTitle: "მანქანის დეტალები",
+      aboutTitle: "ჩემს შესახებ",
+      setupTitle: "შეავსე პროფილი",
+      myRoutes: "ჩემი რეისები",
+      noRoutes: "რეისები ჯერ არ გაქვს დამატებული.",
+      edit: "რედაქტირება",
+      remove: "წაშლა",
     },
-  }
-
-  const [ratingValue, setRatingValue] = useState(3);
-  const [editButton, setEditButton] = useState("Edit Profile Pic");
-  const [carEditButton, setCarEditButton] = useState("Edit");
+  };
 
   const [showProfilePicUpload, setShowProfilePicUpload] = useState(false);
   const [showCarUpload, setShowCarUpload] = useState(false);
+  const [myRoutes, setMyRoutes] = useState([]);
   const [profilePic, setProfilePic] = useState(
     "https://t3.ftcdn.net/jpg/03/46/83/96/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"
   );
   const dispatch = useDispatch();
   const params = useParams();
   const localId = localStorage.getItem("localId");
+  const token = localStorage.getItem("token");
   const id = params.id;
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
   let profilePicUrl =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/pictures/profile/" +
     id +
-    ".json";
-  // const [id, setId] = useState();
+    ".json" +
+    authQuery;
   const myProfile = localId === id;
-  let profileLabel = "Complete my profile";
 
   let profileUrl =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/profile/" +
     id +
-    ".json";
+    ".json" +
+    authQuery;
   let currentProfile = {};
 
   useEffect(() => {
@@ -92,7 +121,7 @@ const ProfilePage = () => {
       dispatch(profileActions.newProfileHandler(data));
     }
     fetchData();
-  }, [id]);
+  }, [dispatch, profileUrl]);
 
   useEffect(() => {
     async function fetchImgLink() {
@@ -113,169 +142,193 @@ const ProfilePage = () => {
     }
 
     fetchImgLink();
-  }, [id]);
+  }, [dispatch, myProfile, profilePicUrl]);
 
   const profilePicEditHandler = () => {
     if (showProfilePicUpload) {
       setShowProfilePicUpload(false);
-      setEditButton("Edit Profile Pic");
-
       return;
     }
     setShowProfilePicUpload(true);
-    setEditButton("Close");
   };
 
-  const ProfilePicButton = (
-    <section>
-      {myProfile && (
-        <button
-          className={classes.customButton}
-          type="button"
-          onClick={profilePicEditHandler}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="25"
-            height="25"
-           
-            className="bi bi-file-image"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
-            <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z" />
-          </svg>
-        </button>
-      )}
-    </section>
-  );
   const carPicEditHandler = () => {
     if (showCarUpload) {
       setShowCarUpload(false);
-      setCarEditButton("Edit");
-
       return;
     }
     setShowCarUpload(true);
-    setCarEditButton("Close");
+  };
+
+  useEffect(() => {
+    if (!myProfile) return;
+    const listUrl =
+      "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list.json" +
+      authQuery;
+    fetch(listUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const items = [];
+        if (data) {
+          for (const key in data) {
+            if (data[key].localId === localId) {
+              items.push({ id: key, ...data[key] });
+            }
+          }
+        }
+        setMyRoutes(items.reverse());
+      })
+      .catch(() => setMyRoutes([]));
+  }, [myProfile, localId, authQuery]);
+
+  const removeRouteHandler = async (routeId) => {
+    const routeUrl =
+      "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list/" +
+      routeId +
+      ".json" +
+      authQuery;
+    const res = await fetch(routeUrl, { method: "DELETE" });
+    if (res.ok) {
+      setMyRoutes((prev) => prev.filter((item) => item.id !== routeId));
+    }
   };
 
   currentProfile = useSelector((state) => state.profile);
 
-  if (myProfile && currentProfile.name) {
-    profileLabel = "Edit my profile";
-  }
-
   //if it is my profile but I Have not set up my profile yet
   if (myProfile && currentProfile.name === "") {
     return (
-      <div className={classes.wrapper}>
-        <div className={classes.top}>
-          <div className={classes.topleft}>
-            {myProfile && (
-              <Link to="/complete-profile"> {profilePageTxt[lang].setUpProfile}</Link>
-            )}
-          </div>
-          <div className={classes.topright}>
-            <img src={profilePic} width="250" height="250"></img>
-          </div>
+      <div className={classes.page}>
+        <div className={classes.container}>
+          <SectionCard title={profilePageTxt[lang].setupTitle}>
+            <p className={classes.emptyStateText}>{profilePageTxt[lang].setUpProfile}</p>
+            <button
+              type="button"
+              className={classes.primaryButton}
+              onClick={() => history.push("/complete-profile")}
+            >
+              {profilePageTxt[lang].setupTitle}
+            </button>
+          </SectionCard>
         </div>
-        <div className={classes.mid}>
-          {currentProfile.name && <CarouselReact />}
-        </div>
-        <div className={classes.bottom}></div>
       </div>
     );
   }
 
   return (
-    <div className={classes.wrapper}>
-      <div className={classes.mainDiv}>
-        <div className={classes.profileImage}>
-          <Avatar
-            alt="My Profile Image"
-            src={profilePic}
-            sx={{ width: 150, height: 150 }}
-          />
+    <div className={classes.page}>
+      <div className={classes.container}>
+        <div className={classes.grid}>
+          <div className={classes.leftColumn}>
+            <ProfileHeaderCard
+              avatar={profilePic}
+              name={currentProfile.name}
+              age={currentProfile.age}
+              ageSuffix={profilePageTxt[lang].ageSuffix}
+              myProfile={myProfile}
+              labels={profilePageTxt[lang]}
+              onEditProfile={() => history.push("/complete-profile")}
+              onToggleProfileImageUpload={profilePicEditHandler}
+              showProfilePicUpload={showProfilePicUpload}
+              ratingNode={<RatingSection />}
+              uploadNode={<ImageUpload />}
+            />
 
-          <section className={classes.profilePicEditButton}>
-            {ProfilePicButton}
-          </section>
+            <SectionCard title={profilePageTxt[lang].aboutTitle}>
+              <p className={classes.valueText}>
+                {currentProfile.aboutMe || profilePageTxt[lang].noInfo}
+              </p>
+            </SectionCard>
+          </div>
+
+          <div className={classes.rightColumn}>
+            <SectionCard title={profilePageTxt[lang].contactTitle}>
+              <div className={classes.infoRow}>
+                <span className={classes.label}>Phone</span>
+                <span className={classes.value}>
+                  {currentProfile.number || profilePageTxt[lang].noInfo}
+                </span>
+              </div>
+            </SectionCard>
+
+            <SectionCard title={profilePageTxt[lang].carTitle}>
+              <div className={classes.infoRow}>
+                <span className={classes.label}>{profilePageTxt[lang].carModel}</span>
+                <span className={classes.value}>
+                  {currentProfile.model || profilePageTxt[lang].noInfo}
+                </span>
+              </div>
+              <div className={classes.infoRow}>
+                <span className={classes.label}>{profilePageTxt[lang].numberPlate}</span>
+                <span className={classes.plateBadge}>
+                  {currentProfile.plate || profilePageTxt[lang].noInfo}
+                </span>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title={profilePageTxt[lang].galleryTitle}
+              actions={
+                myProfile ? (
+                  <button className={classes.secondaryButton} type="button" onClick={carPicEditHandler}>
+                    {showCarUpload ? profilePageTxt[lang].hideUpload : profilePageTxt[lang].uploadCarPics}
+                  </button>
+                ) : null
+              }
+            >
+              {myProfile && showCarUpload && <ImagesUploadCaR />}
+              <CarouselReact />
+            </SectionCard>
+          </div>
         </div>
-        {myProfile && showProfilePicUpload && <ImageUpload />}
-        <section className={classes.nameAndRating}>
-          <div><h3>{currentProfile.name} </h3> <div> {currentProfile.age}  y/o</div></div>
-          <RatingSection />
-          {/* Her will go Rating Section */}
-        </section>
-        <div className={classes.edit}>
+
+        <div className={classes.bottomSection}>
           {myProfile && (
-            <Link to="/complete-profile">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                className="bi bi-pencil"
-                viewBox="0 0 16 16"
-              >
-                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-              </svg>{" "}
-            </Link>
+            <SectionCard title={profilePageTxt[lang].myRoutes}>
+              {myRoutes.length === 0 && (
+                <p className={classes.emptyStateText}>{profilePageTxt[lang].noRoutes}</p>
+              )}
+              {myRoutes.map((item) => (
+                <div className={classes.routeRow} key={item.id}>
+                  <div>
+                    <p className={classes.routeMain}>
+                      {item.departure} → {item.destination}
+                    </p>
+                    <p className={classes.routeMeta}>
+                      {item.date} | {item.departureTime} - {item.arrivalTime}
+                    </p>
+                  </div>
+                  <div className={classes.routeActions}>
+                    <button
+                      type="button"
+                      className={classes.secondaryButton}
+                      onClick={() => history.push(`/submit?edit=${item.id}`)}
+                    >
+                      {profilePageTxt[lang].edit}
+                    </button>
+                    <button
+                      type="button"
+                      className={classes.dangerButton}
+                      onClick={() => removeRouteHandler(item.id)}
+                    >
+                      {profilePageTxt[lang].remove}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </SectionCard>
+          )}
+          {!myProfile && (
+            <SectionCard title="Feedback">
+              <FeedbackCustom />
+            </SectionCard>
+          )}
+          {myProfile && (
+            <SectionCard title="Comments">
+              <CommentsSection />
+            </SectionCard>
           )}
         </div>
-        <section className={classes.infoTitle}>
-          <h4>{profilePageTxt[lang].aboutMe} </h4>
-          <section className={classes.info}>{currentProfile.aboutMe} </section>
-        </section>
-
-        <section className={classes.infoTitle}>
-          <h4>{profilePageTxt[lang].phone}</h4>
-          <section className={classes.info}> {currentProfile.number}</section>
-        </section>
-
-        <section className={classes.infoTitle}>
-          <h4>{profilePageTxt[lang].carModel}</h4>
-          <section className={classes.info}> {currentProfile.model}</section>
-        </section>
-
-        <section className={classes.infoTitle}>
-
-          <h4>{profilePageTxt[lang].numberPlate}</h4>
-          <div className={classes.plateBackground}>
-          <section className={classes.info}> {currentProfile.plate}</section>
-          </div>
-        </section>
-
-        <CarouselReact />
-        {myProfile && (
-          <div className={classes.carPicEditButton}>
-            <button
-              className={classes.customButton}
-              onClick={carPicEditHandler}
-              type="button"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-upload"
-                viewBox="0 0 16 16"
-              >
-                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
-              </svg>
-            </button>
-            {myProfile && showCarUpload && <ImagesUploadCaR />}
-          </div>
-        )}
-
-        {!myProfile && (
-          <div className={classes.feedback}>
-            <FeedbackCustom />
-          </div>
-        )}
-        {myProfile && <CommentsSection />}
       </div>
     </div>
   );

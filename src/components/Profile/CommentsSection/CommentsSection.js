@@ -9,10 +9,8 @@ const CommentsSection = () => {
   const lang = useSelector((state) => state.lang.lang);
   let commentsTxt = {
     EN: {
-      comments:'comments',
-      noComments:'No Comments',
-     
-           
+      comments:'Comments',
+      noComments:'No comments yet',
     },
   
     GE: {
@@ -23,44 +21,37 @@ const CommentsSection = () => {
 
   const params = useParams();
   const [comments, setComments] = useState([]);
+  const token = localStorage.getItem("token");
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
   let id = params.id;
-  let commentsArray = [];
-  let initial = true;
 
   let url =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/comments/" +
     id +
-    ".json";
+    ".json" +
+    authQuery;
 
   useEffect(() => {
-    if (initial) {
-      initial = false;
+    axios.get(url).then((res) => {
+      const commentObject = res.data || {};
+      const commentsArray = Object.keys(commentObject).map((key) => ({
+        id: key,
+        ...commentObject[key],
+      }));
+      setComments(commentsArray.reverse());
+    });
+  }, [id, url]);
 
-      axios.get(url).then((res) => {
-        const commentObject = res.data;
-
-        for (let key in commentObject) {
-          let comment = commentObject[key];
-          commentsArray.push(comment);
-        }
-        setComments(commentsArray);
-        console.log(commentsArray);
-      });
-    }
-  }, [id]);
-
-  const nameEmpty = comments.name === undefined;
-  console.log(comments);
-  let commentsToDisplay = comments.map((item) => (
-    <section className={classes.comment} key={Math.random()}>
-      <a href={item.sender}>
-        {item.name === "" && "User"} {item.name != "" && item.name}
-      </a>
-      : {item.comment}{" "}
+  const commentsToDisplay = comments.map((item) => (
+    <section className={classes.comment} key={item.id}>
+      <div className={classes.commentHeader}>
+        <span className={classes.author}>{item.name || "User"}</span>
+      </div>
+      <p className={classes.commentBody}>{item.comment}</p>
     </section>
   ));
 
-  let noComments = comments.length===0
+  let noComments = comments.length===0;
 
   return (
     <>
@@ -68,7 +59,7 @@ const CommentsSection = () => {
 
       <div className={classes.div}>
         {commentsToDisplay}
-        {noComments && <p className={classes.noComments}>---  {commentsTxt[lang].noComments}    ---</p>}
+        {noComments && <p className={classes.noComments}>{commentsTxt[lang].noComments}</p>}
         </div>
     </>
   );

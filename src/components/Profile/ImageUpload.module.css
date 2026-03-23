@@ -1,5 +1,23 @@
 .custom{
-display: b;
-flex-direction: row;
+display: flex;
+flex-direction: column;
+gap: 8px;
 margin: 10px 10px 0px 10px;
+padding: 10px;
+background: #f8fafc;
+border: 1px solid #e2e8f0;
+border-radius: 10px;
+}
+
+.custom button {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #fff;
+  min-height: 38px;
+}
+
+.custom button:disabled {
+  background: #94a3b8;
 }

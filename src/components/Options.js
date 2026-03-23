@@ -100,6 +100,7 @@ if(lang ==='GE'){
       placeholder={props.placeholder}
       className={props.className}
       onChange={props.onChange}
+      value={props.value}
       id={props.id}
       name={props.name}
       options={options}

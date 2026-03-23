@@ -3,8 +3,6 @@ import classes from "./CompleteProfile.module.css";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
-import Avatar from "@mui/material/Avatar";
-import { useEffect } from "react";
 
 const CompleteProfile = () => {
   const lang = useSelector((state) => state.lang.lang);
@@ -21,7 +19,9 @@ const CompleteProfile = () => {
       phone: "Phone Number",
       carModel: "Car Model",
       numberPlate: "Number Plate",
-      submit: "Submit",
+      submit: "Save Profile",
+      sectionTitle: "Profile Details",
+      cardHint: "Fill all fields to publish and receive ratings.",
     },
 
     GE: {
@@ -35,67 +35,43 @@ const CompleteProfile = () => {
       phone: "ტელეფონის ნომერი",
       carModel: "მანქანის მოდელი",
       numberPlate: "მანქანის ნომერი",
-      submit: "ატვირთვა",
+      submit: "შენახვა",
+      sectionTitle: "პროფილის დეტალები",
+      cardHint: "შეავსე ყველა ველი, რომ ატვირთო რეისი და მიიღო შეფასებები.",
     },
   };
 
-  const [profilePic, setProfilePic] = useState(
-    "https://t3.ftcdn.net/jpg/03/46/83/96/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"
-  );
   const history = useHistory();
-  const profileName = useSelector((state) => state.profile.name);
   let currentProfile = useSelector((state) => state.profile);
 
   const id = localStorage.getItem("localId");
   let path = "profile/" + id;
-  const [name, setName] = useState(currentProfile.name);
+  const [name, setName] = useState(currentProfile.name || "");
   const [nameIsTouched, setNameIsTouched] = useState(false);
 
-  const [number, setNumber] = useState(currentProfile.number);
+  const [number, setNumber] = useState(currentProfile.number || "");
   const [numberIsTouched, setNumberIsTouched] = useState(false);
 
-  const [age, setAge] = useState(currentProfile.age);
+  const [age, setAge] = useState(currentProfile.age || "");
   const [ageIsTouched, setAgeIsTouched] = useState(false);
 
-  const [model, setModel] = useState(currentProfile.model);
+  const [model, setModel] = useState(currentProfile.model || "");
   const [modelIsTouched, setModelIsTouched] = useState(false);
 
-  const [plate, setPlate] = useState(currentProfile.plate);
-  const [plateIsTouched, setPlateIsTouched] = useState(false);
-
-  const [aboutMe, setAboutMe] = useState(currentProfile.aboutMe);
+  const [aboutMe, setAboutMe] = useState(currentProfile.aboutMe || "");
   const [aboutMeIsTouched, setAboutMeIsTouched] = useState(false);
 
-  const [plate1, setPlate1] = useState(currentProfile.plate.split("-")[0]);
-  const [plate2, setPlate2] = useState(currentProfile.plate.split("-")[1]);
-  const [plate3, setPlate3] = useState(currentProfile.plate.split("-")[2]);
-  const [key, setkey] = useState("");
+  const splitPlate = (currentProfile.plate || "--").split("-");
+  const [plate1, setPlate1] = useState(splitPlate[0] || "");
+  const [plate2, setPlate2] = useState(splitPlate[1] || "");
+  const [plate3, setPlate3] = useState(splitPlate[2] || "");
 
   const [profileUpdated, setProfileUpdated] = useState(false);
-
-  useEffect(() => {
-    if (!plate1 || !plate2 || !plate3) {
-      setPlate1("");
-      setPlate2("");
-      setPlate3("");
-    }
-  }, []);
 
   let url =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/profile/" +
     id +
     ".json";
-
-  let plate1Text = [];
-  let plate3Text = [];
-
-  useEffect(() => {
-    document.addEventListener("keydown", detectKeyDown, true);
-  }, []);
-
-  const detectKeyDown = (e) => {
-    setkey(e.key);
-  };
 
   const plate1ChangeHandler = (event) => {
     const plate = event.target.value;
@@ -112,8 +88,9 @@ const CompleteProfile = () => {
   };
 
   const plate2ChangeHandler = (event) => {
-    if (event.target.value.length < 4) {
-      setPlate2(event.target.value);
+    const plate = event.target.value.replace(/\D/g, "");
+    if (plate.length < 4) {
+      setPlate2(plate);
     }
   };
   const plate3ChangeHandler = (event) => {
@@ -151,7 +128,9 @@ const CompleteProfile = () => {
     setNumber(event.target.value);
     setNumberIsTouched(true);
   };
-  const onNumberFocus = () => {};
+  const onNumberFocus = () => {
+    setNumberIsTouched(true);
+  };
 
   const onModelChange = (event) => {
     setModel(event.target.value);
@@ -159,14 +138,6 @@ const CompleteProfile = () => {
   };
   const onModelFocus = () => {
     setModelIsTouched(true);
-  };
-
-  const onPlateChange = (event) => {
-    setPlate(event.target.value.toUpperCase());
-    setPlateIsTouched(true);
-  };
-  const onPlateFocus = () => {
-    setPlateIsTouched(true);
   };
 
   const onAboutMeChange = (event) => {
@@ -179,15 +150,16 @@ const CompleteProfile = () => {
 
   let trimmedNumber = number.replace(/ /g, "");
 
-  const nameIsValid = (nameIsTouched || name.length > 0) && name.length > 1;
+  const nameIsValid = (nameIsTouched || name.length > 0) && name.trim().length > 1;
   const ageIsValid = (ageIsTouched || age.length > 0) && Number(age) > 17;
   const numberIsValid =
     (numberIsTouched || number.length > 0) && trimmedNumber.length === 9;
-  const modelIsValid = (modelIsTouched || model.length > 0) && model.length > 1;
+  const modelIsValid =
+    (modelIsTouched || model.length > 0) && model.trim().length > 1;
   const plateIsValid =
     plate1.length === 2 && plate2.length === 3 && plate3.length === 2;
   const aboutMeIsValid =
-    (aboutMeIsTouched || aboutMe.length > 0) && aboutMe.length > 3;
+    (aboutMeIsTouched || aboutMe.length > 0) && aboutMe.trim().length > 3;
 
   const formIsValid =
     nameIsValid &&
@@ -198,24 +170,22 @@ const CompleteProfile = () => {
     aboutMeIsValid;
 
   const submitHandler = (event) => {
-    console.log(name);
     event.preventDefault();
     if (!formIsValid) {
       setNameIsTouched(true);
       setAgeIsTouched(true);
       setNumberIsTouched(true);
-      setPlateIsTouched(true);
       setModelIsTouched(true);
       setAboutMeIsTouched(true);
       return;
     }
 
     let newItem = {
-      name,
+      name: name.trim(),
       number: trimmedNumber,
-      model,
+      model: model.trim(),
       plate: plateCombined,
-      aboutMe,
+      aboutMe: aboutMe.trim(),
       age,
     };
 
@@ -227,159 +197,138 @@ const CompleteProfile = () => {
       if (!response.ok) {
         throw new Error("something went wrong");
       }
-      if (response.ok) {
-      }
       history.push(path);
     };
     sendData()
-      .then(setProfileUpdated(true))
+      .then(() => setProfileUpdated(true))
       .catch((error) => console.log(error));
   };
 
+  const inputErrorClass = (isValid, isTouched) =>
+    !isValid && isTouched ? classes.invalid : "";
+
   return (
     <div className={classes.main}>
-      {profileUpdated && <h1>{profilePageTxt[lang].profileUpdated}</h1>}
-      <section className={classes.placeholder}>
-        {" "}
-        {profilePageTxt[lang].setUpProfile}
-      </section>
-      {!formIsValid && <h3>{profilePageTxt[lang].fillIn}</h3>}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].name} </h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.name}
-            style={{
-              backgroundColor:
-                !nameIsValid && nameIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="Full Name"
-            onBlur={onNameFocus}
-            onChange={onNameChange}
-          ></input>{" "}
-        </section>
+      <div className={classes.header}>
+        <h1>{profilePageTxt[lang].sectionTitle}</h1>
+        <p>{profilePageTxt[lang].cardHint}</p>
+      </div>
+      {profileUpdated && <p className={classes.success}>{profilePageTxt[lang].profileUpdated}</p>}
+      {!formIsValid && <p className={classes.warning}>{profilePageTxt[lang].fillIn}</p>}
 
-        <section className={classes.infoTitle}>
-          <h4>{profilePageTxt[lang].age}</h4>
-          <section className={classes.info}>
+      <form className={classes.form} onSubmit={submitHandler}>
+        <div className={classes.gridTwo}>
+          <section className={classes.field}>
+            <label htmlFor="name">{profilePageTxt[lang].name}</label>
             <input
-              defaultValue={currentProfile.age}
-              style={{
-                backgroundColor:
-                  !ageIsValid && ageIsTouched && "rgba(255, 0, 0, 0.171)",
-              }}
+              id="name"
+              className={inputErrorClass(nameIsValid, nameIsTouched)}
+              value={name}
+              type="text"
+              placeholder="Full Name"
+              onBlur={onNameFocus}
+              onChange={onNameChange}
+            />
+          </section>
+
+          <section className={classes.field}>
+            <label htmlFor="age">{profilePageTxt[lang].age}</label>
+            <input
+              id="age"
+              className={inputErrorClass(ageIsValid, ageIsTouched)}
+              value={age}
               type="number"
               placeholder="Age"
               onBlur={onAgeFocus}
               onChange={onAgeChange}
-            ></input>
+            />
             {age < 18 && ageIsTouched && age > 0 && (
-              <p className={classes.error}>
-                {" "}
-                {profilePageTxt[lang].mustBeOver}
-              </p>
-            )}{" "}
+              <p className={classes.error}>{profilePageTxt[lang].mustBeOver}</p>
+            )}
           </section>
-        </section>
-      </section>
+        </div>
 
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].aboutMe} </h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.aboutMe}
-            style={{
-              backgroundColor:
-                !aboutMeIsValid && aboutMeIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="About me"
+        <section className={classes.field}>
+          <label htmlFor="about">{profilePageTxt[lang].aboutMe}</label>
+          <textarea
+            id="about"
+            className={inputErrorClass(aboutMeIsValid, aboutMeIsTouched)}
+            value={aboutMe}
+            placeholder="Tell people about your driving style and preferences"
             onBlur={onAboutMeFocus}
             onChange={onAboutMeChange}
-          ></input>{" "}
-        </section>
-      </section>
-
-      {/* Phone Number */}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].phone}</h4>
-        <section className={classes.info}>
-          <input
-            className={classes.number}
-            defaultValue={currentProfile.number}
-            style={{
-              backgroundColor:
-                !numberIsValid && numberIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="number"
-            placeholder="Number (555 55 55 55)"
-            onBlur={onNumberFocus}
-            onChange={onNumberChange}
-          ></input>
-        </section>
-      </section>
-
-      {/* Car Model */}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].carModel}</h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.model}
-            style={{
-              backgroundColor:
-                !modelIsValid && modelIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="Car Model ( Toyota Camry 2019)"
-            onBlur={onModelFocus}
-            onChange={onModelChange}
-          ></input>
-        </section>
-      </section>
-
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].numberPlate}</h4>
-        <section className={classes.info}></section>
-        <section className={classes.plateInput}>
-          <input
-            type="text"
-            placeholder="AA"
-            value={plate1}
-            maxLength="5"
-            onChange={plate1ChangeHandler}
-          />
-          -
-          <input
-            type="number"
-            placeholder="321"
-            value={plate2}
-            onChange={plate2ChangeHandler}
-          />
-          -
-          <input
-            type="text"
-            placeholder="AA"
-            maxlength="2"
-            value={plate3}
-            onChange={plate3ChangeHandler}
+            rows={4}
           />
         </section>
-      </section>
 
-      <form className={classes.form}>
+        <div className={classes.gridTwo}>
+          <section className={classes.field}>
+            <label htmlFor="phone">{profilePageTxt[lang].phone}</label>
+            <input
+              id="phone"
+              className={inputErrorClass(numberIsValid, numberIsTouched)}
+              value={number}
+              type="number"
+              placeholder="555555555"
+              onBlur={onNumberFocus}
+              onChange={onNumberChange}
+            />
+          </section>
+
+          <section className={classes.field}>
+            <label htmlFor="model">{profilePageTxt[lang].carModel}</label>
+            <input
+              id="model"
+              className={inputErrorClass(modelIsValid, modelIsTouched)}
+              value={model}
+              type="text"
+              placeholder="Toyota Camry 2019"
+              onBlur={onModelFocus}
+              onChange={onModelChange}
+            />
+          </section>
+        </div>
+
+        <section className={classes.field}>
+          <label>{profilePageTxt[lang].numberPlate}</label>
+          <div className={`${classes.plateGroup} ${!plateIsValid ? classes.invalidPlate : ""}`}>
+            <input
+              type="text"
+              placeholder="AA"
+              value={plate1}
+              maxLength="2"
+              onChange={plate1ChangeHandler}
+            />
+            <span>-</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="321"
+              value={plate2}
+              maxLength="3"
+              onChange={plate2ChangeHandler}
+            />
+            <span>-</span>
+            <input
+              type="text"
+              placeholder="AA"
+              maxLength="2"
+              value={plate3}
+              onChange={plate3ChangeHandler}
+            />
+          </div>
+        </section>
+
+        <div className={classes.actions}>
         <Button
-          style={{
-            backgroundColor:
-              (!formIsValid && "grey") ||
-              (formIsValid && "rgba(93, 211, 128, 0.925)"),
-          }}
-          onClick={submitHandler}
+          type="submit"
+          disabled={!formIsValid}
           variant="light"
           className={classes.button}
         >
-          {profilePageTxt[lang].subm}
+          {profilePageTxt[lang].submit}
         </Button>
+        </div>
       </form>
     </div>
   );

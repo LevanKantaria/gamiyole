@@ -4,5 +4,19 @@
     align-items: center;
     justify-content: center;
     margin: auto;
-    
+    gap: 10px;
+}
+
+.success {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: fit-content;
+  margin: 8px auto;
+}
+
+.sendLabel {
+  margin-left: 8px;
 }

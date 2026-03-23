@@ -16,17 +16,20 @@ let feedbackTxt = {
   EN: {
     howWasRide:'How was your ride?',
     successfullySent:'Successfully Sent',
-    alert:'Please Give Rating before sending',
-         
+    alert:'Please add rating or comment before sending',
+    send: "Send",
   },
 
   GE: {
     howWasRide:'როგორ შეაფასებდი მგზავრობას?',
     successfullySent:'წარმატებით გაიგზავნა',
-    alert:'გთხოვთ შეავსოთ კომენტარი ან დაუწეროთ ვარსკვლავები გაგზავნამდე',  
+    alert:'გთხოვთ შეავსოთ კომენტარი ან დაუწეროთ ვარსკვლავები გაგზავნამდე',
+    send: "გაგზავნა",
   },
 }
   const senderId = localStorage.getItem("localId");
+  const token = localStorage.getItem("token");
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
   const params = useParams();
   let profileId = params.id;
   const loggedIn = localStorage.getItem("token") !== "guest";
@@ -34,39 +37,40 @@ let feedbackTxt = {
   const [comment, setComment] = useState("");
   const [myName, setMyName] = useState("");
   const [commentSent, setCommentSent] = useState(false);
+  const [sending, setSending] = useState(false);
 
   let hostUrlRating =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/ratings/" +
     profileId +
     "/" +
     senderId +
-    ".json";
+    ".json" +
+    authQuery;
 
   let hostUrlComment =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/comments/" +
     profileId +
-    ".json";
+    ".json" +
+    authQuery;
 
   useEffect(() => {
     axios
       .get(
         "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/profile/" +
           senderId +
-          ".json"
+          ".json" +
+          authQuery
       )
       .then((res) => {
-        
-          setMyName(res.data.name);
-          console.log(myName);
-        
+          setMyName(res.data?.name || "");
       });
-  }, [senderId]);
+  }, [senderId, authQuery]);
 
   const commentChangeHandler = (event) => {
     setComment(event.target.value);
   };
 
-  const sendHandler = () => {
+  const sendHandler = async () => {
     const sendComment = async () => {
       let commentItem = {
         comment,
@@ -100,19 +104,25 @@ let feedbackTxt = {
       }
     };
 
-    if (value < 1 && comment === "") {
+    if ((value || 0) < 1 && comment.trim() === "") {
       alert(feedbackTxt[lang].alert);
+      return;
     }
-    if (value > 0) {
-      sendData()
-        .then(setCommentSent(true), setComment(""))
-        .catch((error) => console.log(error));
-    }
-
-    if (comment !== "") {
-      sendComment()
-        .then(setCommentSent(true), setComment(""))
-        .catch((error) => console.log(error));
+    try {
+      setSending(true);
+      if ((value || 0) > 0) {
+        await sendData();
+      }
+      if (comment.trim() !== "") {
+        await sendComment();
+      }
+      setCommentSent(true);
+      setComment("");
+      setTimeout(() => setCommentSent(false), 2000);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -132,7 +142,7 @@ let feedbackTxt = {
           </Form.Group>
         </Form>
       )}
-      {commentSent && <p style={{ color: "green" }}> {feedbackTxt[lang].successfullySent}</p>}
+      {commentSent && <p className={classes.success}> {feedbackTxt[lang].successfullySent}</p>}
       {loggedIn && (
         <section className={classes.rating}>
           <Rating
@@ -142,7 +152,7 @@ let feedbackTxt = {
               setValue(newValue);
             }}
           />
-          <Button variant="contained" onClick={sendHandler}>
+          <Button variant="contained" onClick={sendHandler} disabled={sending}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -153,6 +163,7 @@ let feedbackTxt = {
             >
               <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
             </svg>
+            <span className={classes.sendLabel}>{feedbackTxt[lang].send}</span>
           </Button>
         </section>
       )}

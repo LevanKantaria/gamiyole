@@ -4,7 +4,6 @@ import ListItem from "./ListItem";
 import classes from "./ListItem.module.css";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import { list } from "firebase/storage";
 import Tooltip from "react-bootstrap/Tooltip";
 import Overlay from "react-bootstrap/Overlay";
 
@@ -55,7 +54,7 @@ const List = () => {
     };
 
     subscriptionList();
-  }, []);
+  }, [subscriptionUrl]);
 
   const subscribeHandler = () => {
     setShow(!show);
@@ -72,7 +71,14 @@ const List = () => {
   };
 
   useEffect(() => {
-    if (listItems.length === 0) {
+    const hasMatches = Object.values(items || {}).some(
+      (item) =>
+        item?.destination === filterItem.destination &&
+        item?.departure === filterItem.departure &&
+        item?.date === filterItem.date &&
+        item?.name !== undefined
+    );
+    if (!hasMatches) {
       setClassState(classes.animated);
       let timer = setTimeout(() => {
         setClassState("");
@@ -81,7 +87,7 @@ const List = () => {
         clearTimeout(timer);
       };
     }
-  }, [clickTracker]);
+  }, [clickTracker, items, filterItem]);
 
   array = [];
   for (const key in items) {

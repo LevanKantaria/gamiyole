@@ -1,11 +1,11 @@
 import { useDispatch } from "react-redux";
 import { authAction } from "../store";
-import classes from "./Navbar.module.css"
 import { useSelector } from "react-redux";
 import Button from 'react-bootstrap/Button';
 import React from "react";
-import { Redirect, Route } from "react-router";
 import { useHistory } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase/client";
 
 
 
@@ -36,14 +36,18 @@ const Logout = () => {
     }
 
     const dispatch = useDispatch();
-    const clickHandler = (event) => {
+    const clickHandler = async (event) => {
         event.preventDefault();        
 
+        if (token && token !== "guest") {
+          try {
+            await signOut(auth);
+          } catch (error) {
+            console.log(error);
+          }
+        }
         dispatch(authAction.logoutHandler());
         history.replace('/welcome');
-        window.location.reload(false);
-        
-          
     };
    
     return <div>

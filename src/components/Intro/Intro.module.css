@@ -2,13 +2,13 @@
   background-color: rgba(255, 255, 255, 0.164);
   background-size: 100%;
   background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/CarPool-vector.jpg?alt=media&token=801be200-c167-4ffa-86dc-1ef90accc555");
-  height: 50vh;
+  height: 30vh;
   animation: fadeIn 0.2s ease-in forwards;
   margin: auto;
   background-size: cover;
 background-position: center;
   margin-bottom: 4vw;
-  max-height: 50vh;
+  max-height: 30vh;
 }
 
 .maindiv h1 {
@@ -47,9 +47,10 @@ h6 {
     background-size: 100%;
     background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/1261811806-vector.jpg?alt=media&token=2bb29e6a-3ffe-4a63-8096-32cf40b9fa33");
     background-repeat: no-repeat;
-    height: 30vh;
+    height: 15vh;
     animation: fadeIn 0.2s ease-in forwards;
     background-position: top;
+    margin-bottom: 10px;
   }
   .maindiv h1 {
     position: relative;

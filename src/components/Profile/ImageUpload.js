@@ -10,25 +10,32 @@ const ImageUpload = () => {
   const [percent, setPercent] = useState(0);
   const [uploading, setUploading] = useState(false);
   const params = useParams();
+  const token = localStorage.getItem("token");
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
   let id = params.id;
   let profileUrl =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/pictures/profile/" +
     id +
-    ".json";
+    ".json" +
+    authQuery;
   let urlLink = "";
 
   const uploadHandler = (event) => {
-    const file = event.target.files[0]
-        if(file.type !== "image/jpg" && file.type!=='image/png' && file.type !== 'image/jpeg'){
-          console.log('gimme an image, bicth')
-          alert('Please Upload an Image');
-          return ;
-        };
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.type !== "image/jpg" && file.type !== "image/png" && file.type !== "image/jpeg") {
+      alert("Please upload a JPG or PNG image.");
+      return;
+    }
     setImage(event.target.files[0]);
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
+    if (!image) {
+      alert("Choose an image first.");
+      return;
+    }
     const storageRef = ref(storage, `profiles/${image.name}`);
     const uploadTask = uploadBytesResumable(storageRef, image);
 
@@ -80,7 +87,9 @@ const ImageUpload = () => {
           {uploading && <p>%{percent}</p>}
           <Form.Label>Choose New Profile Picture</Form.Label>
           <Form.Control type="file" size="sm" accept="image/*" />
-          <button onClick={submitHandler}> upload</button>
+          <button onClick={submitHandler} disabled={!image}>
+            Upload
+          </button>
         </Form.Group>
       </div>
     </div>

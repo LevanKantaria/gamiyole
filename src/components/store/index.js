@@ -41,13 +41,34 @@ const ListSlice = createSlice({
 const  authSlice = createSlice({
   name: "auth",
   initialState: {
-    token: localStorage.getItem('token'),
+    token: (() => {
+      const stored = localStorage.getItem('token');
+      if (!stored || stored === 'guest' || stored.split('.').length === 3) {
+        return stored;
+      }
+      localStorage.removeItem('token');
+      return '';
+    })(),
     localId: localStorage.getItem('localId'),
     isLoggedIn: false,
     email:'',
     password:''
   },
   reducers: {
+    restoreSession(state, action) {
+      state.token = action.payload.idToken || "";
+      state.localId = action.payload.localId || "";
+      if (state.token) {
+        localStorage.setItem("token", state.token);
+      } else {
+        localStorage.removeItem("token");
+      }
+      if (state.localId) {
+        localStorage.setItem("localId", state.localId);
+      } else {
+        localStorage.removeItem("localId");
+      }
+    },
     logInHandler(state,action) {
       state.token = action.payload.idToken
       state.localId = action.payload.localId

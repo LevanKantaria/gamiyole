@@ -15,10 +15,8 @@ const Filter = () => {
 
   
   const dispatch = useDispatch();
-  let filteredArray = [];
   const [destination, setDestination] = useState("");
   const [departure, setDeparture] = useState("");
-  const [width, setWidth] = useState(window.innerWidth);
   const [size, setSize] = useState([0, 0]);
   function useWindowSize() {
     useLayoutEffect(() => {
@@ -32,8 +30,6 @@ const Filter = () => {
   }
   useWindowSize();
 
-  const destinationRef = useRef();
-  const departureRef = useRef();
   const daterRef = useRef();
   const [departureWarning, setDepartureWarning] = useState("");
   const [destinationWarning, setDestinationWarning] = useState("");
@@ -73,7 +69,7 @@ const Filter = () => {
   if (size[0] < 768) {
     return (
       <>
-        <h2>{FilterTxt[lang].findDriver}</h2>
+        <h2 className={classes.title}>{FilterTxt[lang].findDriver}</h2>
         <div className={classes.wrapper}>
           <section className={classes.placeholder}></section>
           <section className={classes.list}>
@@ -98,7 +94,6 @@ const Filter = () => {
             <label htmlFor="date"></label>
             <input
               className={classes.date}
-              style={{ width: "50%", margin: "auto" }}
               ref={daterRef}
               type="date"
               id="date"

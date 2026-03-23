@@ -1,7 +1,7 @@
 import classes from "./ListItem.module.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useState, useLayoutEffect, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { listAction } from "../store";
 import Avatar from "@mui/material/Avatar";
@@ -9,20 +9,8 @@ import { useSelector } from "react-redux";
 
 const ListItem = (props) => {
   const lang = useSelector((state) => state.lang.lang);
-
-
-  const [size, setSize] = useState([0, 0]);
-  function useWindowSize() {
-    useLayoutEffect(() => {
-      function updateSize() {
-        setSize([window.innerWidth, window.innerHeight]);
-      }
-      window.addEventListener("resize", updateSize);
-      updateSize();
-      return () => window.removeEventListener("resize", updateSize);
-    }, []);
-  }
-  useWindowSize();
+  const token = localStorage.getItem("token");
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
 
   let days=[]
   let months=[]
@@ -95,23 +83,29 @@ const ListItem = (props) => {
     axios(
       "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/pictures/profile/" +
         props.localId +
-        ".json"
+        ".json" +
+        authQuery
     ).then((res) => {
       setAvatarUrl(res.data);
       console.log(res.data);
     });
-  }, []);
+  }, [props.localId, authQuery]);
 
   const deleteHandler = () => {
     async function fetchData() {
       const response = await fetch(
-        "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list.json"
+        "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list.json" +
+          authQuery
       );
 
       if (!response.ok) {
         throw new Error("No Fetching  fiuuuck");
       }
       let data = await response.json();
+      if (!data) {
+        dispatch(listAction.loadData([]));
+        return;
+      }
 
       console.log(data);
 
@@ -142,7 +136,8 @@ const ListItem = (props) => {
       .delete(
         "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/list/" +
           props.id +
-          ".json"
+          ".json" +
+          authQuery
       )
       .then(setClassState(classes.remove))
       .then(
@@ -155,51 +150,43 @@ const ListItem = (props) => {
   return (
     <div className={classState}>
       <div className={classes.main}>
-        {newDate}
-        <div className={classes.topDiv}>
-          <div>
-            <ul>
-              <section className={classes.departureTime}>
-                {props.departureTime}
-              </section>
-              <li>{props.departure}</li>
-              <section className={classes.arrow}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  className="bi bi-arrow-down"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                  />
-                </svg>
-              </section>
-              <section className={classes.departureTime}>
-                {props.arrivalTime}
-              </section>
-              <li>{props.destination}</li>
-            </ul>
-          </div>
-          <div>
-            <span>{props.price} GEL</span>
+        <div className={classes.header}>
+          <span className={classes.date}>{newDate}</span>
+          <div className={classes.headerMeta}>
+            <span className={classes.seatsBadge}>{props.seats} seats</span>
+            <span className={classes.price}>{props.price} GEL</span>
           </div>
         </div>
-        <div className={classes.botDiv}>
-          <div>
-            <span>
-              <Avatar src={avatarUrl} sx={{ width: 46, height: 46 }} />
-            </span>
-            <span>
-              <Link to={localId}> {props.name} </Link>
-            </span>
+
+        <div className={classes.routeBody}>
+          <div className={classes.timeline}>
+            <span className={classes.dot}></span>
+            <span className={classes.line}></span>
+            <span className={classes.dot}></span>
           </div>
+          <div className={classes.routeInfo}>
+            <div className={classes.routeRow}>
+              <span className={classes.time}>{props.departureTime}</span>
+              <span className={classes.city}>{props.departure}</span>
+            </div>
+            <div className={classes.routeRow}>
+              <span className={classes.time}>{props.arrivalTime}</span>
+              <span className={classes.city}>{props.destination}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={classes.footer}>
+          <Link className={classes.driver} to={localId}>
+            <Avatar src={avatarUrl} sx={{ width: 48, height: 48 }} />
+            <span className={classes.driverName}>{props.name}</span>
+          </Link>
           {myProfile && (
             <button
               onClick={deleteHandler}
-              style={{ backgroundColor: "white", border: "none" }}
+              className={classes.deleteButton}
+              aria-label="Delete route"
+              title="Delete route"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

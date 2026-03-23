@@ -1,7 +1,7 @@
 import { useState } from "react";
 import storage from "./firebaseConfig.js";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { Params, useParams } from "react-router";
+import { useParams } from "react-router";
 import Form from "react-bootstrap/Form";
 import classes from "./ImageUpload.module.css";
 import { useDispatch } from "react-redux";
@@ -30,22 +30,21 @@ const ImagesUploadCaR = () => {
   const [percent, setPercent] = useState(0);
   const [uploading, setUploading] = useState(false);
   const params = useParams();
+  const token = localStorage.getItem("token");
+  const authQuery = token && token !== "guest" ? `?auth=${token}` : "";
   let id = params.id;
   let profileUrl =
     "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/pictures/car/" +
     id +
-    ".json";
+    ".json" +
+    authQuery;
   let urlLink = "";
 
   const uploadHandler = (event) => {
-
-  
-   
-    for(let i =0; i<event.target.files.length; i++){
+    for (let i = 0; i < event.target.files.length; i++) {
         const file = event.target.files[i]
         if(file.type !== "image/jpg" && file.type!=='image/png' && file.type !== 'image/jpeg'){
-          console.log('gimme an image, bicth')
-          alert('Please Upload an Image');
+          alert("Please upload JPG or PNG images.");
           return ;
         };
    
@@ -53,17 +52,18 @@ const ImagesUploadCaR = () => {
         newImage["id"] = Math.random();
     setImages((prevState) => [...prevState, newImage]);
 }
-console.log(images)
   };
 
   const submitHandler = (event) => {
     
     event.preventDefault();
-    const promises=[];
-    images.map((image) => {
+    if (images.length === 0) {
+      alert("Choose at least one image first.");
+      return;
+    }
+    images.forEach((image) => {
         const storageRef = ref(storage, `cars/${image.name}`);
         const uploadTask = uploadBytesResumable(storageRef, image);
-        promises.push(uploadTask)
     
         uploadTask.on(
           "state_changed",
@@ -93,13 +93,12 @@ console.log(images)
               sendData()
               .then(dispatch(profileActions.carRefreshHandler()))
               
-                .then(console.log('should be dispatched'))
                 .catch((error) => console.log(error));
             });
           }
         );
 
-    })
+    });
 
    
   };
@@ -113,7 +112,7 @@ console.log(images)
         <Form.Label>{imagesUploadTxt[lang].ShowCar}</Form.Label>
         {uploading &&<p>%{percent}</p>}
         <Form.Control type="file" multiple  accept="image/*"/>
-        <button onClick={submitHandler}> {imagesUploadTxt[lang].upload}</button>
+        <button onClick={submitHandler} disabled={images.length === 0}> {imagesUploadTxt[lang].upload}</button>
       </Form.Group>
       </div>
     </div>

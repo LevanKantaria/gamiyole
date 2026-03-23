@@ -1,35 +1,36 @@
 .wrapper {
   width: 80%;
-
   margin: auto;
   max-width: 400px;
-  padding: 20px;
-  border: solid 1px #FFB703;
-
-  border-radius: 10px;
+  padding: 14px;
+  border: solid 1px #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 
 
 .placeholder {
   background-color: rgba(255, 240, 255, 0);
-  height: 1vh;
-  margin: 10px;
+  height: 6px;
+  margin: 4px 0;
   width: 100%;
 }
 
-h2 {
-  width: 50%;
+.title {
   margin: auto;
-  padding: 5px;
+  padding: 3px 0 8px 0;
   width: 80%;
+  color: rgb(83, 87, 99);
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .date {
   border-radius: 4px;
   border: solid 1px;
-  padding: 10px;
-
+  padding: 10px 12px;
   border-color: rgba(148, 147, 156, 0.616);
   width: 100%;
 }
@@ -37,34 +38,26 @@ h2 {
 .button {
   display: block;
   width: 100%;
-  height: 3rem;
-  color: rgb(255, 255, 255);
-  border-radius: 5px 5px 10px 5px;
-  border: 1px;
- background-color: #FFB703;
-  font-size: large;
+  height: 2.75rem;
+  color: #ffffff;
+  border-radius: 10px;
+  border: none;
+  background-color: #0f62fe;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 6px;
 }
-button:hover {
-  background-color: #108392e0;
- 
-
-}
-.button1 :hover {
-  background-color: #fafaf9;
-  
+.button:hover {
+  background-color: #0b4cd6;
 }
 .button:active {
-  background-color: #2d2bb3;
-  transform: translateY(3px);
+  background-color: #0b4cd6;
+  transform: translateY(1px);
 }
 
 .red {
   background-color: rgba(241, 33, 5, 0.295);
 }
-h2 {
-  color: rgb(83, 87, 99);
-}
-
 .headshake {
   border: red;
   padding: 2px;
@@ -123,9 +116,9 @@ h2 {
     max-width: 1300px;
     
     align-items: center;
-    border: solid 1px rgba(54, 52, 52, 0.247);
+    border: solid 1px rgba(148, 163, 184, 0.35);
     justify-content: space-between;
-    background-color:#ffffffb0;
+    background-color:#ffffffd8;
     padding-left: 5px;
     padding-top: 0px;
     padding-right: 5px;
@@ -154,13 +147,14 @@ h2 {
     border-radius: 5px;    
     margin: auto;
     height: 35px;
-    background-color: #af464600;
+    background-color: transparent;
     font-size: large;
     transform: scale(1.3);
+    color: #0f62fe;
   }
 
   .button1:hover {
-    background-color: #ffffff00; 
+    background-color: transparent; 
   
     animation: hover 0.1s  ease-in forwards
   }
@@ -177,7 +171,7 @@ h2 {
          
 
   }
-  h2 {
+  .title {
     top: -25vh;
     position: relative;
     

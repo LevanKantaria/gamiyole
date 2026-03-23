@@ -20,7 +20,7 @@ const dispatch = useDispatch();
       setChecked(true)
     }
     dispatch(langActions.langToggle(localStorage.getItem('Lang')))
-  },[])
+  },[dispatch])
  
 
   const languageToggleHandler = () =>{

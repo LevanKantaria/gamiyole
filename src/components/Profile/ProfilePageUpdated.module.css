@@ -1,121 +1,236 @@
-.wrapper {
-  background-color: rgba(255, 255, 255, 0.774);
-  border-radius: 20px;
-
-  max-width: 800px;
-  margin: auto;
+.page {
+  padding: 24px 12px 48px 12px;
+  background: #f7f8fa;
 }
 
-.mainDiv {
-  margin-top: 5px;
+.container {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.leftColumn,
+.rightColumn {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
-.profileImage {
-  position: relative;
-  top: 1vh;
-  margin: 25px auto 10px 40px;
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  padding: 18px 20px;
 }
-.edit {
+
+.cardHeader {
   display: flex;
-
-  align-content: flex-end;
-  width: fit-content;
-  margin-right: 15px;
-  margin-left: auto;
-}
-
-.nameAndRating {
-  display: flex;
-  flex-direction: column;
-  margin: 20px auto 30px 40px;
-
-  align-items: flex-start;
-}
-.nameAndRating div {
-  display: flex;
-  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-
-  padding-right: 10px;
-  width: 300px;
-}
-.nameAndRating div div {
-  margin-left: 15px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.infoTitle {
-  width: 90vw;
-  max-width: 800px;
-  margin: auto;
-  margin-top: 5px;
-  padding-top: 5px;
-  border-top: solid;
-  border-color: rgb(217, 219, 221);
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cardBody {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
+  gap: 14px;
 }
 
-.info {
-  margin-top: 10px;
-  font-size: larger;
-  position: relative;
-  top: -3px;
+.headerRow {
+  display: flex;
+  gap: 18px;
+  align-items: center;
 }
 
-button{
-  background-color: none;
+.avatarWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
-button:hover{
-  background-color: rgba(245, 222, 179, 0);
-}
-.customButton {
-  background-color: rgba(240, 248, 255, 0);
-  height: 45px;
 
-  border: none;
+.headerMeta h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
 }
-.customButton :hover{
-  
-  height: 40px;
- width: 35px;
+
+.headerMeta p {
+  margin: 4px 0 0 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.uploadWrap {
+  margin-top: 8px;
+}
+
+.primaryButton,
+.secondaryButton {
   border-radius: 10px;
-
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
-.plateBackground {
-  background-image: url("https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/georgia-country-european-license-plate.jpg?alt=media&token=1dbb3107-6241-4456-9e97-77b843aaaca8");
-  display: flex;
-  justify-content: space-around;
-  background-color: rgb(240, 233, 233);
-  width: 175px;
-  background-repeat: no-repeat;
+
+.primaryButton {
+  background: #0f62fe;
+  color: #fff;
+}
+
+.primaryButton:hover {
+  background: #0b4cd6;
+}
+
+.secondaryButton {
+  background: #eef2ff;
+  color: #1e3a8a;
+  border-color: #c7d2fe;
+}
+
+.secondaryButton:hover {
+  background: #e0e7ff;
+}
+
+.iconEditButton {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 10px;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
   align-items: center;
-  font-weight: 800;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  margin: auto;
+  justify-content: center;
 }
 
-.profilePicEditButton {
-  position: relative;
-  width: 20%;
-  top: -30px;
-  left: 65px;
-  margin: auto;
-  
-  
+.iconEditButton:hover {
+  background: #dbeafe;
 }
 
-.carouselImgae {
-  max-height: 10vh;
+.label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-.carPicEditButton {
-  position: relative;
-  margin-top: 1vh;
+.value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-.feedback {
-  margin: 5px 3vw 10px 3vw;
+.valueText {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #0f172a;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.plateBadge {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.bottomSection {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.emptyStateText {
+  margin: 0;
+  color: #475569;
+}
+
+.routeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.routeRow:last-child {
+  border-bottom: none;
+}
+
+.routeMain {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.routeMeta {
+  margin: 4px 0 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.routeActions {
+  display: flex;
+  gap: 8px;
+}
+
+.dangerButton {
+  border-radius: 10px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 600;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.dangerButton:hover {
+  background: #ffe4e6;
+}
+
+@media (min-width: 980px) {
+  .grid {
+    grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.4fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cardActions .primaryButton {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
 }

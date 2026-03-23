@@ -6,24 +6,20 @@ import { useDispatch } from "react-redux";
 import { authAction } from "../store";
 import { useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase/client";
 
 function SignUpModal(props) {
   const history = useHistory();
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
 
   const emailRef = useRef();
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [confirmPassord, setConfirmPassword] = useState("");
   const [confirmIsTouched, setConfirmIsTouched] = useState(false);
-
-  const emailChangeHandler = (event) => {
-    setPassword(event.target.value);
-  };
 
   const passwordChangeHandler = (event) => {
     setPassword(event.target.value);
@@ -43,64 +39,44 @@ function SignUpModal(props) {
     dispatch(authAction.logInGuestHandler());
   };
 
-  const submitHandler = (event) => {
+  const submitHandler = async (event) => {
     event.preventDefault();
 
     const enteredEmail = emailRef.current.value;
     const enteredPassword = passwordRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
     if (enteredPassword !== confirmPassword) {
-      setErrorTxt = 'Passwords do not match!'
+      setErrorTxt("Passwords do not match!");
+      return;
     }
-    setIsLoading(true);
-
-    fetch(
-      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCGf3VaQgcpgxlTeLvWpXJZmCvwqX4FdkU",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          email: enteredEmail,
-          password: enteredPassword,
-          returnSecureToken: true,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        enteredEmail,
+        enteredPassword
+      );
+      const idToken = await userCredential.user.getIdToken();
+      const data = {
+        idToken,
+        localId: userCredential.user.uid,
+        email: enteredEmail,
+        password: enteredPassword,
+      };
+      dispatch(authAction.signUpHandler(data));
+      dispatch(authAction.logInHandler(data));
+      history.push("/welcome");
+    } catch (err) {
+      const message = err?.code || err?.message || "SIGN_UP_FAILED";
+      if (message.includes("email-already-in-use")) {
+        setErrorTxt("Email already exists");
+      } else if (message.includes("weak-password")) {
+        setErrorTxt("Password must be at least 6 characters");
+      } else if (message.includes("invalid-email")) {
+        setErrorTxt("Invalid email");
+      } else {
+        setErrorTxt("Sign up failed");
       }
-    )
-      .then((res) => {
-        setIsLoading(false);
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.json().then((data) => {
-            let errorMessage = "error";
-            if (data && data.error && data.error.message) {
-              errorMessage = data.error.message;
-              console.log(errorMessage);
-              setErrorTxt(errorMessage);
-              if(errorMessage==='EMAIL_EXISTS'){
-                setErrorTxt('Email already exists')
-              }
-              if(errorMessage ==='MISSING_PASSWORD'){
-                setErrorTxt('Enter Password')
-              }
-            }
-            
-            throw new Error(errorMessage);
-          });
-        }
-      })
-      .then((data) => {
-        console.log(data);
-        let pw = { email: enteredEmail, password: enteredPassword };
-        dispatch(authAction.signUpHandler(data));
-        dispatch(authAction.logInHandler(data));
-        history.push("/welcome");
-      })
-      .catch((err) => {
-       
-      });
+    }
   };
   return (
     <form className={classes.modal}>
@@ -114,7 +90,6 @@ function SignUpModal(props) {
             placeholder="Your Email"
             required
             ref={emailRef}
-            onChange={emailChangeHandler}
           />
         </div>
         <div>
