@@ -1,0 +1,53 @@
+.page {
+  padding-top: 36px;
+  max-width: 760px;
+}
+
+.doc {
+  padding: 36px 40px;
+  line-height: 1.65;
+  font-size: 15px;
+  color: #334155;
+}
+
+.doc h1 {
+  font-size: 26px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.updated {
+  color: var(--faint);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 20px;
+}
+
+.doc h2 {
+  font-size: 17px;
+  color: var(--ink);
+  margin: 26px 0 8px;
+}
+
+.doc ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.doc li {
+  margin-bottom: 8px;
+}
+
+.note {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .doc {
+    padding: 24px 20px;
+  }
+}

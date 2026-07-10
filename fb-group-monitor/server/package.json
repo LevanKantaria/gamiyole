@@ -1,0 +1,15 @@
+{
+  "name": "fb-group-monitor-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ingest endpoint for the FB Group Monitor browser extension.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "^12.11.1",
+    "firebase-admin": "^13.0.0"
+  }
+}

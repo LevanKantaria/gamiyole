@@ -1,0 +1,301 @@
+.hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%);
+  padding: 64px 0 88px;
+  color: #fff;
+}
+
+.heroInner {
+  text-align: center;
+}
+
+.title {
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  max-width: 560px;
+  margin: 14px auto 34px;
+  font-size: clamp(15px, 2vw, 17.5px);
+  color: #dbeafe;
+  line-height: 1.55;
+}
+
+.searchWrap {
+  margin: 0 auto;
+  text-align: left;
+}
+
+.heroActions {
+  margin-top: 18px;
+}
+
+.driveLink {
+  color: #bfdbfe;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.driveLink:hover {
+  color: #fff;
+}
+
+.section {
+  margin-top: 56px;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sectionHead h2 {
+  font-size: 22px;
+}
+
+.sectionHead a {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.center {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 26px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.step {
+  padding: 26px 22px;
+  text-align: center;
+}
+
+.stepIcon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 14px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepTitle {
+  font-size: 16.5px;
+  margin-bottom: 8px;
+}
+
+.stepText {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.trust {
+  text-align: center;
+  background: var(--brand-soft);
+  border: 1px solid #dbeafe;
+  border-radius: 20px;
+  padding: 40px 24px;
+}
+
+.trustStars {
+  color: var(--star);
+  font-size: 22px;
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+}
+
+.trust h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.trust p {
+  max-width: 520px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.routes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.routeChip {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.routeChip:hover {
+  text-decoration: none;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.appPromo {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+  border-radius: 20px;
+  padding: 40px 44px;
+  color: #fff;
+}
+
+.appPromoText {
+  flex: 1;
+}
+
+.appPromoText h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.appPromoText p {
+  color: #dbeafe;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 22px;
+  max-width: 440px;
+}
+
+.storeBadges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.storeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  cursor: default;
+  opacity: 0.9;
+}
+
+.storeBadge span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.storeBadge small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #bfdbfe;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.appPromoArt {
+  font-size: 84px;
+  flex-shrink: 0;
+}
+
+.faq {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faqItem {
+  padding: 0;
+  overflow: hidden;
+}
+
+.faqQuestion {
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+}
+
+.faqQuestion::-webkit-details-marker {
+  display: none;
+}
+
+.faqQuestion::after {
+  content: "+";
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--brand);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.faqItem[open] .faqQuestion::after {
+  content: "–";
+}
+
+.faqAnswer {
+  padding: 0 20px 16px;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .hero {
+    padding: 44px 0 60px;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .appPromo {
+    flex-direction: column;
+    text-align: center;
+    padding: 32px 24px;
+  }
+
+  .appPromoText p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .storeBadges {
+    justify-content: center;
+  }
+
+  .appPromoArt {
+    display: none;
+  }
+}

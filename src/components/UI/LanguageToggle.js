@@ -1,51 +1,25 @@
-import './LanguageToggle.css'
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { langActions } from '../store';
-
+import { useDispatch, useSelector } from "react-redux";
+import { langActions } from "../store";
+import classes from "./LanguageToggle.module.css";
 
 const LanguageToggle = () => {
-const dispatch = useDispatch();
-  const [checked, setChecked] = useState(false);
-  useEffect (()=>{
-    if(!localStorage.getItem('Lang')){
-      localStorage.setItem('Lang', 'EN')
-    }
-    console.log(localStorage.getItem('Lang'))
-    let currentLanguage = localStorage.getItem('Lang')
-    if(currentLanguage ==='GE'){
-      setChecked(false) 
-    }
-    if(currentLanguage ==='EN'){
-      setChecked(true)
-    }
-    dispatch(langActions.langToggle(localStorage.getItem('Lang')))
-  },[])
- 
-
-  const languageToggleHandler = () =>{
-  let currentLanguage = localStorage.getItem('Lang')
-
-  if(currentLanguage === 'GE'){
-    localStorage.setItem('Lang', 'EN')
-    setChecked(true)
-  }
-  if(currentLanguage ==='EN'){
-    localStorage.setItem('Lang' , 'GE')
-    setChecked(false)
-
-  }
-  dispatch(langActions.langToggle(localStorage.getItem('Lang')))
-  }
-
+  const dispatch = useDispatch();
+  const lang = useSelector((state) => state.lang.lang);
 
   return (
-    
-      <label className="switch">
-        <input type="checkbox" onChange={languageToggleHandler}  checked={checked} />
-        <span className="slider round"></span>
-      </label>
-   
+    <div className={classes.toggle} role="group" aria-label="Language">
+      {["GE", "EN"].map((code) => (
+        <button
+          key={code}
+          type="button"
+          className={`${classes.option} ${lang === code ? classes.selected : ""}`}
+          onClick={() => dispatch(langActions.langToggle(code))}
+          aria-pressed={lang === code}
+        >
+          {code === "GE" ? "ქარ" : "EN"}
+        </button>
+      ))}
+    </div>
   );
 };
 

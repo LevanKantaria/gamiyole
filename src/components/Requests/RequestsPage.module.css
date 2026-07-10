@@ -1,0 +1,141 @@
+.page {
+  padding-top: 32px;
+  max-width: 760px;
+}
+
+.title {
+  font-size: 26px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 8px 0 22px;
+  max-width: 560px;
+  line-height: 1.55;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  background: var(--brand-soft);
+  border-color: #dbeafe;
+}
+
+.steps {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepsLabel {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand);
+}
+
+.stepsList {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroBtn {
+  flex-shrink: 0;
+}
+
+.listHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.listTitle {
+  font-size: 18px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  text-align: center;
+  padding: 44px 20px;
+  background: #fff;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.emptyTitle {
+  font-weight: 800;
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+.emptyHint {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.gate {
+  padding-top: 48px;
+  display: flex;
+  justify-content: center;
+}
+
+.gateCard {
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  max-width: 420px;
+}
+
+@media (max-width: 620px) {
+  .hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .heroBtn {
+    width: 100%;
+  }
+}

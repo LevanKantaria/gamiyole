@@ -1,0 +1,253 @@
+.page {
+  padding-top: 32px;
+}
+
+.title {
+  font-size: 26px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 6px 0 24px;
+}
+
+.gate {
+  padding-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 460px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.stat {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.statDanger {
+  color: var(--danger);
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  padding: 10px 16px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tabActive {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.search {
+  max-width: 340px;
+}
+
+.filter {
+  max-width: 180px;
+}
+
+.tableCard {
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+
+.userNameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roleBadge {
+  font-size: 10.5px;
+  padding: 1px 8px;
+}
+
+.contactCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13.5px;
+}
+
+.ratingButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.ratingButton:hover {
+  background: var(--brand-soft);
+}
+
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px !important;
+}
+
+.expandedRow td {
+  background: var(--bg);
+}
+
+.expandedInner {
+  padding: 6px 4px;
+}
+
+.noReviews {
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 8px 0 0;
+}
+
+.reviewList {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reviewItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.reviewBody {
+  min-width: 0;
+}
+
+.reviewTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.reviewDate {
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.reviewComment {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: #334155;
+}
+
+@media (max-width: 700px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .search,
+  .filter {
+    max-width: none;
+  }
+}

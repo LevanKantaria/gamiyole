@@ -1,0 +1,17 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.icon {
+  display: block;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d9bf0;
+}

@@ -1,0 +1,50 @@
+.footer {
+  margin-top: 64px;
+  background: var(--ink);
+  color: #cbd5e1;
+  padding: 36px 0;
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.tag {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: #94a3b8;
+  max-width: 380px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+  text-align: right;
+}
+
+.meta a {
+  color: #93c5fd;
+}
+
+.policyLink {
+  color: #93c5fd;
+}
+
+@media (max-width: 640px) {
+  .meta {
+    text-align: left;
+  }
+}

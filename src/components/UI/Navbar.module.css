@@ -1,75 +1,207 @@
 .header {
-  width: 100%;
-  height: 5rem;
-  background: rgba(255, 255, 255, 0.89);
-  
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
 }
 
-.header nav {
-  height: 100%;
-}
-.logos{
-  height: 50px;
-  width: 50px;
-  margin-right: 20px;
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-color: rgb(201, 211, 221);
-  background-image: url('https://firebasestorage.googleapis.com/v0/b/react-http-7efc4.appspot.com/o/LogoOrange.jpg?alt=media&token=79ae5a69-c92e-40ee-8ded-7821d51b4c03');  
-
-}
-
-.header ul {
-  height: 100%;
-  list-style: none;
+.inner {
   display: flex;
-  padding: 0;
-  margin: 0;
   align-items: center;
-  justify-content: space-around;
+  gap: 24px;
+  height: 64px;
 }
 
-.header li {
-  margin: 1 1rem;
-  width: auto;
-  margin: auto;
-  color: #95bcf0;
-  font-size: large;
-  
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
-.header a {
-  color: rgb(20, 106, 218);
-  font-weight: 500;
+.logo:hover {
   text-decoration: none;
 }
 
-.header a:hover,
-.header a:active,
-.header a.active {
-  color: #95bcf0;
-  padding-bottom: 0.25rem;
-  border-bottom: 4px solid #95bcf0;
-}
-
-.button{
-  width: auto;
-  color: rgb(236, 228, 228);
-  background-color: orange;
-  width: 100%;
-  height: 3rem;
-  margin-right: 5rem;
-  padding : 3px 1rem;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  margin: auto;
-}
-
-.section{
+.nav {
   display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.link {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.link:hover {
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--brand-soft);
+}
+
+.active {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.menuWrap {
+  position: relative;
+}
+
+.avatarButton {
+  border: 2px solid var(--line);
+  background: none;
+  border-radius: 50%;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  transition: border-color 0.15s ease;
+}
+
+.avatarButton:hover {
+  border-color: var(--brand);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeUp 0.15s ease both;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--bg);
+  text-decoration: none;
+}
+
+.menuItemActive {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.menuDanger {
+  color: var(--danger);
+}
+
+/* Mobile hamburger — hidden on desktop. */
+.mobileWrap {
+  position: relative;
+  display: none;
+}
+
+.burger {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.burgerLine {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.burgerTop {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.burgerBottom {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.burgerHide {
+  opacity: 0;
+}
+
+.mobileMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeUp 0.15s ease both;
+}
+
+.menuDivider {
+  height: 1px;
+  background: var(--line);
+  margin: 6px 4px;
+}
+
+@media (max-width: 720px) {
+  .inner {
+    gap: 12px;
+  }
+
+  /* Inline nav and desktop auth move into the hamburger sheet. */
+  .nav,
+  .desktopAuth {
+    display: none;
+  }
+
+  .mobileWrap {
+    display: block;
+  }
+}
+
+@media (max-width: 380px) {
+  .logo span {
+    display: none;
+  }
 }

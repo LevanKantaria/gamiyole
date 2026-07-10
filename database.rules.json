@@ -1,0 +1,119 @@
+{
+  "rules": {
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": false
+      }
+    },
+    "disabledDrivers": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "verified": {
+      ".read": true,
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "list": {
+      ".read": true,
+      ".indexOn": ["date", "localId"],
+      "$rideId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('localId').val() === auth.uid && !root.child('disabledDrivers').child(auth.uid).exists()) || (data.exists() && data.child('localId').val() === auth.uid) || root.child('admins').child(auth.uid).val() === true)",
+        "seatsAvailable": {
+          ".write": "auth != null"
+        }
+      }
+    },
+    "archived_rides": {
+      ".indexOn": ["date", "archivedAt"],
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "externalRides": {
+      ".read": true,
+      ".indexOn": ["date"],
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+    "profile": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "pictures": {
+      ".read": true,
+      "profile": {
+        "$userId": {
+          ".write": "auth != null && auth.uid == $userId"
+        }
+      },
+      "car": {
+        "$userId": {
+          ".write": "auth != null && auth.uid == $userId"
+        }
+      }
+    },
+    "ratings": {
+      "$userId": {
+        ".read": true,
+        "$raterId": {
+          ".write": "auth != null && ((auth.uid == $raterId && $raterId != $userId) || root.child('admins').child(auth.uid).val() === true)"
+        }
+      }
+    },
+    "bookings": {
+      "$rideId": {
+        ".read": "auth != null",
+        ".indexOn": ["status"],
+        "$userId": {
+          ".write": "auth != null && (auth.uid == $userId || root.child('admins').child(auth.uid).val() === true)"
+        }
+      }
+    },
+    "userBookings": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "comments": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      }
+    },
+    "routines": {
+      "$userId": {
+        ".read": "auth != null && (auth.uid == $userId || root.child('admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "requests": {
+      ".read": "auth != null",
+      ".indexOn": ["dateTo", "passengerUid"],
+      "$requestId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('passengerUid').val() === auth.uid) || (data.exists() && (data.child('passengerUid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true)))"
+      }
+    },
+    "pushTokens": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "notificationPrefs": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "subscriptions": {
+      "$routeKey": {
+        "$userId": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId"
+        }
+      }
+    }
+  }
+}

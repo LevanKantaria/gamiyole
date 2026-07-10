@@ -1,386 +1,251 @@
-import { useState } from "react";
-import classes from "./CompleteProfile.module.css";
+import { useEffect, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
-import Button from "react-bootstrap/Button";
-import Avatar from "@mui/material/Avatar";
-import { useEffect } from "react";
+import classes from "./CompleteProfile.module.css";
+import { useT } from "../../i18n";
+import { saveProfile, normalizeFacebookUrl } from "../../services/profile";
+
+const PLATE_RE = /^[A-Z]{2}-\d{3}-[A-Z]{2}$/;
 
 const CompleteProfile = () => {
-  const lang = useSelector((state) => state.lang.lang);
-
-  let profilePageTxt = {
-    EN: {
-      profileUpdated: "Profile Updated Successfully",
-      setUpProfile: "Set Up Your Profile Before you Continue",
-      fillIn: "Please fill in the details",
-      name: "Name",
-      age: "Age",
-      mustBeOver: "Must be over 18",
-      aboutMe: "About Me",
-      phone: "Phone Number",
-      carModel: "Car Model",
-      numberPlate: "Number Plate",
-      submit: "Submit",
-    },
-
-    GE: {
-      profileUpdated: "პროფილი წარმატებით განახლდა",
-      setUpProfile: "სანამ გააგრძელებ შეავსე შენი პროფილი",
-      fillIn: "გთხოვ შეაფსო ყველა გრაფა",
-      name: "სახელი",
-      age: "ასაკი",
-      mustBeOver: "უნდა იყო 18 წლის ან მეტის",
-      aboutMe: "ჩემს შესახებ",
-      phone: "ტელეფონის ნომერი",
-      carModel: "მანქანის მოდელი",
-      numberPlate: "მანქანის ნომერი",
-      submit: "ატვირთვა",
-    },
-  };
-
-  const [profilePic, setProfilePic] = useState(
-    "https://t3.ftcdn.net/jpg/03/46/83/96/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"
-  );
+  const t = useT();
   const history = useHistory();
-  const profileName = useSelector((state) => state.profile.name);
-  let currentProfile = useSelector((state) => state.profile);
+  const { uid, initialized } = useSelector((state) => state.auth);
+  const profile = useSelector((state) => state.profile.data);
+  const profileLoaded = useSelector((state) => state.profile.loaded);
 
-  const id = localStorage.getItem("localId");
-  let path = "profile/" + id;
-  const [name, setName] = useState(currentProfile.name);
-  const [nameIsTouched, setNameIsTouched] = useState(false);
+  const [form, setForm] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  const [number, setNumber] = useState(currentProfile.number);
-  const [numberIsTouched, setNumberIsTouched] = useState(false);
-
-  const [age, setAge] = useState(currentProfile.age);
-  const [ageIsTouched, setAgeIsTouched] = useState(false);
-
-  const [model, setModel] = useState(currentProfile.model);
-  const [modelIsTouched, setModelIsTouched] = useState(false);
-
-  const [plate, setPlate] = useState(currentProfile.plate);
-  const [plateIsTouched, setPlateIsTouched] = useState(false);
-
-  const [aboutMe, setAboutMe] = useState(currentProfile.aboutMe);
-  const [aboutMeIsTouched, setAboutMeIsTouched] = useState(false);
-
-  const [plate1, setPlate1] = useState(currentProfile.plate.split("-")[0]);
-  const [plate2, setPlate2] = useState(currentProfile.plate.split("-")[1]);
-  const [plate3, setPlate3] = useState(currentProfile.plate.split("-")[2]);
-  const [key, setkey] = useState("");
-
-  const [profileUpdated, setProfileUpdated] = useState(false);
-
+  // Prefill once the user's own profile arrives from the live subscription.
   useEffect(() => {
-    if (!plate1 || !plate2 || !plate3) {
-      setPlate1("");
-      setPlate2("");
-      setPlate3("");
-    }
-  }, []);
-
-  let url =
-    "https://react-http-7efc4-default-rtdb.europe-west1.firebasedatabase.app/profile/" +
-    id +
-    ".json";
-
-  let plate1Text = [];
-  let plate3Text = [];
-
-  useEffect(() => {
-    document.addEventListener("keydown", detectKeyDown, true);
-  }, []);
-
-  const detectKeyDown = (e) => {
-    setkey(e.key);
-  };
-
-  const plate1ChangeHandler = (event) => {
-    const plate = event.target.value;
-    if (event.target.value.length === 0) {
-      setPlate1("");
-    }
-    if (plate.length > 2) {
-      return;
-    }
-    if (!/^[a-zA-Z]+$/.test(plate)) {
-      return;
-    }
-    setPlate1(plate.toUpperCase());
-  };
-
-  const plate2ChangeHandler = (event) => {
-    if (event.target.value.length < 4) {
-      setPlate2(event.target.value);
-    }
-  };
-  const plate3ChangeHandler = (event) => {
-    const plate = event.target.value;
-    if (event.target.value.length === 0) {
-      setPlate3("");
-    }
-    if (plate.length > 2) {
-      return;
-    }
-    if (!/^[a-zA-Z]+$/.test(plate)) {
-      return;
-    }
-    setPlate3(plate.toUpperCase());
-  };
-  let plateCombined = plate1 + "-" + plate2 + "-" + plate3;
-
-  const onNameChange = (event) => {
-    setName(event.target.value);
-    setNameIsTouched(true);
-  };
-  const onNameFocus = (event) => {
-    setNameIsTouched(true);
-  };
-
-  const onAgeChange = (event) => {
-    setAge(event.target.value);
-    setAgeIsTouched(true);
-  };
-  const onAgeFocus = () => {
-    setAgeIsTouched(true);
-  };
-
-  const onNumberChange = (event) => {
-    setNumber(event.target.value);
-    setNumberIsTouched(true);
-  };
-  const onNumberFocus = () => {};
-
-  const onModelChange = (event) => {
-    setModel(event.target.value);
-    setModelIsTouched(true);
-  };
-  const onModelFocus = () => {
-    setModelIsTouched(true);
-  };
-
-  const onPlateChange = (event) => {
-    setPlate(event.target.value.toUpperCase());
-    setPlateIsTouched(true);
-  };
-  const onPlateFocus = () => {
-    setPlateIsTouched(true);
-  };
-
-  const onAboutMeChange = (event) => {
-    setAboutMe(event.target.value);
-    setAboutMeIsTouched(true);
-  };
-  const onAboutMeFocus = () => {
-    setAboutMeIsTouched(true);
-  };
-
-  let trimmedNumber = number.replace(/ /g, "");
-
-  const nameIsValid = (nameIsTouched || name.length > 0) && name.length > 1;
-  const ageIsValid = (ageIsTouched || age.length > 0) && Number(age) > 17;
-  const numberIsValid =
-    (numberIsTouched || number.length > 0) && trimmedNumber.length === 9;
-  const modelIsValid = (modelIsTouched || model.length > 0) && model.length > 1;
-  const plateIsValid =
-    plate1.length === 2 && plate2.length === 3 && plate3.length === 2;
-  const aboutMeIsValid =
-    (aboutMeIsTouched || aboutMe.length > 0) && aboutMe.length > 3;
-
-  const formIsValid =
-    nameIsValid &&
-    ageIsValid &&
-    numberIsValid &&
-    modelIsValid &&
-    plateIsValid &&
-    aboutMeIsValid;
-
-  const submitHandler = (event) => {
-    console.log(name);
-    event.preventDefault();
-    if (!formIsValid) {
-      setNameIsTouched(true);
-      setAgeIsTouched(true);
-      setNumberIsTouched(true);
-      setPlateIsTouched(true);
-      setModelIsTouched(true);
-      setAboutMeIsTouched(true);
-      return;
-    }
-
-    let newItem = {
-      name,
-      number: trimmedNumber,
-      model,
-      plate: plateCombined,
-      aboutMe,
-      age,
-    };
-
-    const sendData = async () => {
-      const response = await fetch(url, {
-        method: "PUT",
-        body: JSON.stringify(newItem),
+    if (form === null && profileLoaded) {
+      setForm({
+        name: profile?.name || "",
+        age: profile?.age || "",
+        number: profile?.number || "",
+        aboutMe: profile?.aboutMe || "",
+        userType: profile?.userType || (profile?.model ? "driver" : "passenger"),
+        model: profile?.model || "",
+        plate: profile?.plate === "--" ? "" : profile?.plate || "",
+        facebook: profile?.facebook || "",
       });
-      if (!response.ok) {
-        throw new Error("something went wrong");
-      }
-      if (response.ok) {
-      }
-      history.push(path);
-    };
-    sendData()
-      .then(setProfileUpdated(true))
-      .catch((error) => console.log(error));
+    }
+  }, [form, profileLoaded, profile]);
+
+  if (!initialized) return <div className="spinner" />;
+
+  if (!uid) {
+    return (
+      <div className={`container ${classes.gate}`}>
+        <div className={`card ${classes.gateCard}`}>
+          <h2>{t("signIn")}</h2>
+          <Link to="/signin" className="btn btnPrimary">
+            {t("signIn")}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (form === null) return <div className="spinner" />;
+
+  const isDriver = form.userType === "driver";
+
+  const set = (field) => (e) => {
+    let { value } = e.target;
+    if (field === "plate") value = value.toUpperCase();
+    setForm({ ...form, [field]: value });
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (form.name.trim().length < 2) errs.name = t("errName");
+    if (!form.age || Number(form.age) < 18 || Number(form.age) > 100) errs.age = t("errAge");
+    if (!/^\d{9}$/.test(form.number.replace(/\s/g, ""))) errs.number = t("errPhone");
+    if (form.aboutMe.trim().length < 4) errs.aboutMe = t("errAbout");
+    if (isDriver) {
+      if (form.model.trim().length < 2) errs.model = t("errCarModel");
+      if (!PLATE_RE.test(form.plate.trim())) errs.plate = t("errPlate");
+    }
+    return errs;
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    setSaving(true);
+    setFailed(false);
+    try {
+      await saveProfile(uid, {
+        name: form.name.trim(),
+        age: form.age,
+        number: form.number.replace(/\s/g, ""),
+        aboutMe: form.aboutMe.trim(),
+        userType: form.userType,
+        model: isDriver ? form.model.trim() : "",
+        plate: isDriver ? form.plate.trim() : "",
+        facebook: normalizeFacebookUrl(form.facebook),
+      });
+      history.push(`/profile/${uid}`);
+    } catch {
+      setFailed(true);
+      setSaving(false);
+    }
   };
 
   return (
-    <div className={classes.main}>
-      {profileUpdated && <h1>{profilePageTxt[lang].profileUpdated}</h1>}
-      <section className={classes.placeholder}>
-        {" "}
-        {profilePageTxt[lang].setUpProfile}
-      </section>
-      {!formIsValid && <h3>{profilePageTxt[lang].fillIn}</h3>}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].name} </h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.name}
-            style={{
-              backgroundColor:
-                !nameIsValid && nameIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="Full Name"
-            onBlur={onNameFocus}
-            onChange={onNameChange}
-          ></input>{" "}
-        </section>
+    <div className={`container ${classes.page}`}>
+      <div className={`card ${classes.formCard}`}>
+        <h1 className={classes.title}>{t("completeProfileTitle")}</h1>
+        <p className={classes.hint}>{t("completeProfileHint")}</p>
 
-        <section className={classes.infoTitle}>
-          <h4>{profilePageTxt[lang].age}</h4>
-          <section className={classes.info}>
+        {failed && <div className="alert alertError">{t("errGeneric")}</div>}
+
+        <form onSubmit={submit} noValidate>
+          <div className={classes.row}>
+            <div className={classes.field}>
+              <label className="label" htmlFor="cp-name">
+                {t("fullName")}
+              </label>
+              <input
+                id="cp-name"
+                className={`input ${errors.name ? "inputError" : ""}`}
+                type="text"
+                value={form.name}
+                onChange={set("name")}
+              />
+              {errors.name && <p className="fieldError">{errors.name}</p>}
+            </div>
+            <div className={classes.fieldNarrow}>
+              <label className="label" htmlFor="cp-age">
+                {t("age")}
+              </label>
+              <input
+                id="cp-age"
+                className={`input ${errors.age ? "inputError" : ""}`}
+                type="number"
+                min="18"
+                max="100"
+                value={form.age}
+                onChange={set("age")}
+              />
+              {errors.age && <p className="fieldError">{errors.age}</p>}
+            </div>
+          </div>
+
+          <div className={classes.block}>
+            <label className="label" htmlFor="cp-phone">
+              {t("phone")}
+            </label>
             <input
-              defaultValue={currentProfile.age}
-              style={{
-                backgroundColor:
-                  !ageIsValid && ageIsTouched && "rgba(255, 0, 0, 0.171)",
-              }}
-              type="number"
-              placeholder="Age"
-              onBlur={onAgeFocus}
-              onChange={onAgeChange}
-            ></input>
-            {age < 18 && ageIsTouched && age > 0 && (
-              <p className={classes.error}>
-                {" "}
-                {profilePageTxt[lang].mustBeOver}
-              </p>
-            )}{" "}
-          </section>
-        </section>
-      </section>
+              id="cp-phone"
+              className={`input ${errors.number ? "inputError" : ""}`}
+              type="tel"
+              placeholder="555123456"
+              value={form.number}
+              onChange={set("number")}
+            />
+            {errors.number && <p className="fieldError">{errors.number}</p>}
+          </div>
 
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].aboutMe} </h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.aboutMe}
-            style={{
-              backgroundColor:
-                !aboutMeIsValid && aboutMeIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="About me"
-            onBlur={onAboutMeFocus}
-            onChange={onAboutMeChange}
-          ></input>{" "}
-        </section>
-      </section>
+          <div className={classes.block}>
+            <label className="label" htmlFor="cp-about">
+              {t("aboutMe")}
+            </label>
+            <textarea
+              id="cp-about"
+              className={`textarea ${errors.aboutMe ? "inputError" : ""}`}
+              value={form.aboutMe}
+              onChange={set("aboutMe")}
+              maxLength={400}
+            />
+            {errors.aboutMe && <p className="fieldError">{errors.aboutMe}</p>}
+          </div>
 
-      {/* Phone Number */}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].phone}</h4>
-        <section className={classes.info}>
-          <input
-            className={classes.number}
-            defaultValue={currentProfile.number}
-            style={{
-              backgroundColor:
-                !numberIsValid && numberIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="number"
-            placeholder="Number (555 55 55 55)"
-            onBlur={onNumberFocus}
-            onChange={onNumberChange}
-          ></input>
-        </section>
-      </section>
+          <div className={classes.block}>
+            <label className="label" htmlFor="cp-facebook">
+              {t("facebook")}
+            </label>
+            <input
+              id="cp-facebook"
+              className="input"
+              type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              placeholder={t("facebookHint")}
+              value={form.facebook}
+              onChange={set("facebook")}
+            />
+          </div>
 
-      {/* Car Model */}
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].carModel}</h4>
-        <section className={classes.info}>
-          <input
-            defaultValue={currentProfile.model}
-            style={{
-              backgroundColor:
-                !modelIsValid && modelIsTouched && "rgba(255, 0, 0, 0.171)",
-            }}
-            type="text"
-            placeholder="Car Model ( Toyota Camry 2019)"
-            onBlur={onModelFocus}
-            onChange={onModelChange}
-          ></input>
-        </section>
-      </section>
+          <div className={classes.block}>
+            <span className="label">{t("iAmA")}</span>
+            <div className={classes.roleRow}>
+              {[
+                { value: "passenger", label: t("passenger"), hint: t("passengerHint") },
+                { value: "driver", label: t("driver"), hint: t("driverHint") },
+              ].map((role) => (
+                <button
+                  key={role.value}
+                  type="button"
+                  className={`${classes.roleOption} ${
+                    form.userType === role.value ? classes.roleSelected : ""
+                  }`}
+                  onClick={() => setForm({ ...form, userType: role.value })}
+                >
+                  <strong>{role.label}</strong>
+                  <span>{role.hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <section className={classes.infoTitle}>
-        <h4>{profilePageTxt[lang].numberPlate}</h4>
-        <section className={classes.info}></section>
-        <section className={classes.plateInput}>
-          <input
-            type="text"
-            placeholder="AA"
-            value={plate1}
-            maxLength="5"
-            onChange={plate1ChangeHandler}
-          />
-          -
-          <input
-            type="number"
-            placeholder="321"
-            value={plate2}
-            onChange={plate2ChangeHandler}
-          />
-          -
-          <input
-            type="text"
-            placeholder="AA"
-            maxlength="2"
-            value={plate3}
-            onChange={plate3ChangeHandler}
-          />
-        </section>
-      </section>
+          {isDriver && (
+            <div className={classes.row}>
+              <div className={classes.field}>
+                <label className="label" htmlFor="cp-model">
+                  {t("carModel")}
+                </label>
+                <input
+                  id="cp-model"
+                  className={`input ${errors.model ? "inputError" : ""}`}
+                  type="text"
+                  placeholder="Toyota Camry 2019"
+                  value={form.model}
+                  onChange={set("model")}
+                />
+                {errors.model && <p className="fieldError">{errors.model}</p>}
+              </div>
+              <div className={classes.field}>
+                <label className="label" htmlFor="cp-plate">
+                  {t("numberPlate")}
+                </label>
+                <input
+                  id="cp-plate"
+                  className={`input ${classes.plateInput} ${errors.plate ? "inputError" : ""}`}
+                  type="text"
+                  placeholder="AA-123-AA"
+                  maxLength={9}
+                  value={form.plate}
+                  onChange={set("plate")}
+                />
+                {errors.plate && <p className="fieldError">{errors.plate}</p>}
+              </div>
+            </div>
+          )}
 
-      <form className={classes.form}>
-        <Button
-          style={{
-            backgroundColor:
-              (!formIsValid && "grey") ||
-              (formIsValid && "rgba(93, 211, 128, 0.925)"),
-          }}
-          onClick={submitHandler}
-          variant="light"
-          className={classes.button}
-        >
-          {profilePageTxt[lang].subm}
-        </Button>
-      </form>
+          <button type="submit" className={`btn btnPrimary ${classes.submit}`} disabled={saving}>
+            {saving ? t("saving") : t("save")}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,86 @@
+.card {
+  padding: 16px 18px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.city {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.arrow {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.dates svg {
+  color: var(--muted);
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.passenger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: inherit;
+  min-width: 0;
+}
+
+.passenger:hover {
+  text-decoration: none;
+}
+
+.passenger:hover .name {
+  color: var(--brand);
+}
+
+.name {
+  font-weight: 700;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  flex-shrink: 0;
+}

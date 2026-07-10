@@ -1,0 +1,138 @@
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.trigger svg {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Keep the formatted date on one line so the field matches the height of the
+   sibling selects instead of wrapping to two rows. */
+.trigger span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.placeholder {
+  color: var(--faint);
+}
+
+.pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  width: 292px;
+  padding: 12px;
+  animation: fadeUp 0.15s ease both;
+  /* Explicit — the popover can render inside sections with light-on-dark text
+     (e.g. the home hero), which would otherwise cascade white text in. */
+  color: var(--ink);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.nav {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dow {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faint);
+  text-transform: uppercase;
+  padding: 4px 0 6px;
+}
+
+.day {
+  aspect-ratio: 1;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease;
+}
+
+.day:hover:not(:disabled) {
+  background: var(--brand-soft);
+}
+
+.day:disabled {
+  color: var(--line);
+  cursor: default;
+}
+
+.today {
+  box-shadow: inset 0 0 0 1.5px var(--brand);
+}
+
+.selected {
+  background: var(--brand) !important;
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .pop {
+    left: auto;
+    right: 0;
+  }
+}

@@ -1,88 +1,128 @@
-
-.error{
-    align-self: flex-start;
-    color: rgb(37, 6, 6);
-    padding: 5px;
-    border-radius: 10px;
-    background-color: rgba(207, 32, 32, 0.171);
-}
-
-.main input{
-    border: solid;
-    border-width: 1px;
-    margin: 5px;
-    padding: 3px;
-    border-radius: 5px;
-
-}
-
-.main h1{
-  position: relative;
-  top: 50px;
-
-  margin: auto;
-  background-color: greenyellow;
-  border-radius: 10px;
-  width: fit-content;
-}
-
-.main{
-    animation: fadeIn 0.2s ease-in forwards;
-}
-
-.placeholder{
-  margin-top: 100px;
-  height: 200px;
-  font-size: 3rem;
-  
-}
-
-input::-webkit-outer-spin-button,
- input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.infoTitle{
-  width: 90vw ;
-  max-width: 800px;
-  margin: auto;
-  margin-top: 5px;
-  padding-top: 5px;
-  border-top: solid;
-  border-color: rgb(217, 219, 221);
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-}
-
-.plateInput{
-  display: flex;
-  margin: auto;
-  align-items: center;
-  
-}
-
-.plateInput input{
-  width: 60px;
+.page {
+  padding-top: 36px;
   display: flex;
   justify-content: center;
-  margin: auto;
 }
 
-.info{
- margin-top: 10px;
- font-size: larger;
-
+.formCard {
+  width: 100%;
+  max-width: 620px;
+  padding: 32px;
 }
 
-@keyframes fadeIn{
-    0%{
-      opacity: 0;
-    }
-    50%{
-      opacity: 0;
-    }
-    100%{
-      opacity: 1;
-    }
+.title {
+  font-size: 24px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 8px 0 22px;
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+}
+
+.fieldNarrow {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.block {
+  margin-top: 16px;
+}
+
+.roleRow {
+  display: flex;
+  gap: 12px;
+}
+
+.roleOption {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.roleOption strong {
+  font-size: 15px;
+}
+
+.roleOption span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.roleOption:hover {
+  border-color: var(--faint);
+}
+
+.roleSelected {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.roleSelected strong {
+  color: var(--brand);
+}
+
+.plateInput {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 26px;
+}
+
+.gate {
+  padding-top: 48px;
+  display: flex;
+  justify-content: center;
+}
+
+.gateCard {
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  max-width: 420px;
+}
+
+@media (max-width: 560px) {
+  .row {
+    flex-direction: column;
+    gap: 16px;
   }
+
+  .fieldNarrow {
+    width: 100%;
+  }
+
+  .roleRow {
+    flex-direction: column;
+  }
+
+  .formCard {
+    padding: 22px;
+  }
+}

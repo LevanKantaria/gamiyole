@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "ExpoApp",
+    "slug": "ExpoApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "com.gamiyole.app",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gamiyole.app",
+      "usesAppleSignIn": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "aps-environment": "production"
+      },
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.gamiyole.app",
+              "com.googleusercontent.apps.174835682967-6h1tbidgnslihsup0iursje1fftdeoak"
+            ]
+          },
+          {
+            "CFBundleURLSchemes": [
+              "com.gamiyole.app",
+              "com.googleusercontent.apps.174835682967-6h1tbidgnslihsup0iursje1fftdeoak"
+            ]
+          }
+        ]
+      },
+      "runtimeVersion": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1d4ed8"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.gamiyole.app",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "./plugins/withXcode26FmtFix.js",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "color": "#1d4ed8"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c36889c2-a354-4aa8-b140-61a567bbb2a6"
+      }
+    },
+    "owner": "levankantaria",
+    "updates": {
+      "url": "https://u.expo.dev/c36889c2-a354-4aa8-b140-61a567bbb2a6"
+    }
+  }
+}

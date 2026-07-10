@@ -1,0 +1,115 @@
+.section {
+  margin-top: 32px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.head h3 {
+  font-size: 19px;
+}
+
+.average {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.form {
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.formTitle {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.formRating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.formRating .label {
+  margin: 0;
+}
+
+.form button {
+  margin-top: 12px;
+}
+
+.ok {
+  color: var(--success);
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 8px 0 0;
+}
+
+.err {
+  color: var(--danger);
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 8px 0 0;
+}
+
+.signInHint {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.emptyText {
+  color: var(--muted);
+  font-size: 14.5px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review {
+  padding: 14px 16px;
+}
+
+.reviewHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reviewMeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reviewer {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.reviewDate {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.comment {
+  margin: 10px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #334155;
+}

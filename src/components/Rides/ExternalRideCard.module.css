@@ -1,0 +1,141 @@
+.card {
+  position: relative;
+  padding: 18px 20px 18px 22px;
+  overflow: hidden;
+  background: var(--card);
+  border-style: dashed;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+
+/* Left accent bar in Facebook blue — an at-a-glance "this is external" cue. */
+.accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: #1877f2;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.route {
+  flex: 1;
+  min-width: 0;
+}
+
+.stop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time {
+  font-weight: 800;
+  font-size: 15px;
+  min-width: 46px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2.5px solid var(--muted);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.dotEnd {
+  background: var(--muted);
+}
+
+.city {
+  font-weight: 700;
+  font-size: 15.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lineWrap {
+  display: flex;
+  padding-left: 56px;
+}
+
+.line {
+  width: 2px;
+  height: 18px;
+  background: var(--muted);
+  margin-left: 3.5px;
+  border-radius: 2px;
+  opacity: 0.35;
+}
+
+.sourceBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(24, 119, 242, 0.1);
+  color: #1877f2;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.seats {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.postText {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  flex-wrap: wrap;
+}
+
+.note {
+  margin: 0;
+  flex: 1;
+  min-width: 180px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.viewBtn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Rideshare DB</title>
+<style>
+  :root { --bg:#f0f2f5; --card:#fff; --line:#dcdfe4; --ink:#1c1e21; --muted:#65676b; --accent:#1877f2; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 -apple-system,system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 20px; position:sticky; top:0; }
+  h1 { margin:0; font-size:17px; }
+  .stats { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .stat { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:6px 12px; }
+  .stat b { font-size:18px; }
+  .wrap { padding:16px 20px; }
+  .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+  .tab { padding:6px 12px; border:1px solid var(--line); background:var(--card); border-radius:20px; cursor:pointer; }
+  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--bg); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  tr:last-child td { border-bottom:0; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+  .driver { background:#e7f3ff; color:#1877f2; }
+  .passenger { background:#e6f4ea; color:#1a7f37; }
+  .unknown { background:#f0f2f5; color:#65676b; }
+  .muted { color:var(--muted); }
+  a { color:var(--accent); text-decoration:none; }
+  .text { max-width:420px; }
+  .empty { padding:30px; text-align:center; color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🚗 Rideshare DB</h1>
+  <div class="stats" id="stats"></div>
+</header>
+<div class="wrap">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-view="all">All</div>
+    <div class="tab" data-view="driver">Drivers</div>
+    <div class="tab" data-view="passenger">Passengers</div>
+    <div class="tab" data-view="comments">Comments</div>
+    <div class="tab" data-view="contacts">Contacts</div>
+    <div class="tab" data-view="phones">Phones</div>
+    <div class="tab" data-view="profiles">Profiles</div>
+    <div class="tab" data-view="import">Import ⛭</div>
+  </div>
+  <div id="content"><div class="empty">Loading…</div></div>
+</div>
+<script>
+const $ = (s) => document.querySelector(s);
+async function get(p){ const r = await fetch(p); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+
+function fatal(msg){ $('#content').innerHTML = `<div class="empty">${msg}</div>`; }
+
+// If the file was opened directly (file://) rather than served by the node
+// server, relative fetches can't work. Tell the user how to open it right.
+if (location.protocol === 'file:') {
+  fatal('This page was opened as a file. Start the server and open <b>http://localhost:8787</b> in your browser instead.');
+  throw new Error('opened as file://');
+}
+function esc(s){ return (s??"").toString().replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function pill(t){ return `<span class="pill ${t||'unknown'}">${t||'unknown'}</span>`; }
+function inh(flag){ return flag ? ' <span class="muted" title="inherited from the post this comment replies to">↩︎</span>' : ''; }
+function route(r){
+  const a=r.route_from, b=r.route_to;
+  if(!a&&!b) return '<span class="muted">—</span>';
+  return `${a||'?'} → ${b||'?'}${inh(r.route_inherited)}`;
+}
+function depart(r){
+  let s='<span class="muted">—</span>';
+  if(r.departure_at){ const d=new Date(r.departure_at); if(!isNaN(d)) s=d.toLocaleString('en-GB',{timeZone:'Asia/Tbilisi',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+  else if(r.departure_date) s=esc(r.departure_date + (r.departure_time?(' '+r.departure_time):''));
+  return s + inh(r.departure_inherited);
+}
+function kindTag(k){ return k==='comment' ? ' <span class="pill unknown">💬 comment</span>' : ''; }
+
+async function loadStats(){
+  const s = await get('/stats');
+  const t = s.totals || {};
+  const top = (s.topRoutes||[]).slice(0,3).map(r=>`${r.route_from}→${r.route_to} (${r.n})`).join(', ') || '—';
+  $('#stats').innerHTML =
+    `<div class="stat"><b>${t.posts||0}</b> rows</div>`+
+    `<div class="stat"><b>${t.phones||0}</b> phones</div>`+
+    `<div class="stat"><b>${t.profiles||0}</b> people</div>`+
+    `<div class="stat muted"><b>${s.unclassified||0}</b> unknown · <b>${s.missingDeparture||0}</b> no time</div>`+
+    `<div class="stat muted">top routes: ${esc(top)}</div>`;
+}
+
+async function loadPosts(type, kind){
+  let rows = await get('/posts?limit=1000' + (type?`&type=${type}`:''));
+  if(kind) rows = rows.filter(r=>r.kind===kind);
+  if(!rows.length) return $('#content').innerHTML = '<div class="empty">Nothing here yet. Start the server, then the extension flushes its pending items within a minute.</div>';
+  $('#content').innerHTML = `<table><thead><tr>
+    <th>Type</th><th>Author</th><th>Route</th><th>Depart</th><th>Seats</th><th>Phones</th><th>Posted</th><th class="text">Text</th><th></th>
+    </tr></thead><tbody>${rows.map(r=>`<tr>
+      <td>${pill(r.user_type)}${kindTag(r.kind)}</td>
+      <td>${r.author_url?`<a href="${esc(r.author_url)}" target="_blank">${esc(r.author_name)}</a>`:esc(r.author_name)}</td>
+      <td>${route(r)}</td>
+      <td>${depart(r)}</td>
+      <td>${r.seats??'<span class="muted">—</span>'}</td>
+      <td>${(r.phones||[]).map(esc).join('<br>')||'<span class="muted">—</span>'}</td>
+      <td class="muted">${esc(r.date)}</td>
+      <td class="text">${esc(r.text)}</td>
+      <td>${r.permalink?`<a href="${esc(r.permalink)}" target="_blank">open</a>`:''}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function loadPhones(){
+  const rows = await get('/phones');
+  if(!rows.length) return $('#content').innerHTML = '<div class="empty">No phone numbers captured yet.</div>';
+  $('#content').innerHTML = `<table><thead><tr><th>Phone</th><th>Name</th><th>Type</th><th>Route</th><th>Date</th></tr></thead><tbody>${
+    rows.map(r=>`<tr><td>${esc(r.phone)}</td><td>${esc(r.author_name)}</td><td>${pill(r.user_type)}</td><td>${route(r)}</td><td class="muted">${esc(r.date)}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+function waLink(phone){ const d=(phone||'').replace(/\D/g,''); return d?`<a href="https://wa.me/${d}" target="_blank">${esc(phone)}</a>`:esc(phone); }
+async function loadContacts(){
+  const rows = await get('/contacts');
+  if(!rows.length) return $('#content').innerHTML = '<div class="empty">No numbers captured yet.</div>';
+  $('#content').innerHTML = `<table><thead><tr>
+    <th>Phone</th><th>Name(s)</th><th>Type</th><th>Routes seen</th><th># seen</th><th>Last</th>
+    </tr></thead><tbody>${rows.map(r=>`<tr>
+      <td>${waLink(r.phone)}</td>
+      <td>${r.names.map(esc).join(', ')||'<span class="muted">—</span>'}</td>
+      <td>${r.types.length?r.types.map(pill).join(' '):'<span class="muted">—</span>'}</td>
+      <td>${r.routes.length?r.routes.map(esc).join(', '):'<span class="muted">—</span>'}</td>
+      <td>${r.appearances>1?`<b>${r.appearances}</b>`:r.appearances}</td>
+      <td class="muted">${esc(r.lastDate)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+async function loadProfiles(){
+  const rows = await get('/profiles');
+  if(!rows.length) return $('#content').innerHTML = '<div class="empty">No profiles yet.</div>';
+  $('#content').innerHTML = `<table><thead><tr><th>Name</th><th>Posts</th><th>First seen</th><th>Last seen</th></tr></thead><tbody>${
+    rows.map(r=>`<tr><td>${r.url?`<a href="${esc(r.url)}" target="_blank">${esc(r.name)}</a>`:esc(r.name)}</td><td>${r.post_count}</td><td class="muted">${esc((r.first_seen||'').slice(0,10))}</td><td class="muted">${esc((r.last_seen||'').slice(0,10))}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+function loadImport(){
+  $('#content').innerHTML = `
+    <div style="max-width:640px">
+      <p class="muted">Paste a comment thread copied from a Facebook post (names + numbers).
+      It links every number to the post below and keeps only entries that contain a phone.</p>
+      <label style="font-weight:600">Post URL</label>
+      <input id="imp_url" type="text" placeholder="https://www.facebook.com/groups/…/permalink/…/"
+        style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;margin:4px 0 10px">
+      <label style="font-weight:600">These commenters are</label>
+      <select id="imp_type" style="display:block;padding:6px;border:1px solid var(--line);border-radius:6px;margin:4px 0 10px">
+        <option value="driver">Drivers (numbers thread)</option>
+        <option value="">Auto (let the rules decide)</option>
+        <option value="passenger">Passengers</option>
+      </select>
+      <label style="font-weight:600">Pasted comments</label>
+      <textarea id="imp_text" rows="10" placeholder="Boss Boss&#10;593573746&#10;4w&#10;Reply&#10;Share&#10;…"
+        style="width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font-family:monospace;font-size:12px"></textarea>
+      <div style="margin-top:10px"><button id="imp_go" style="width:auto;padding:8px 18px;border:0;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer">Import</button>
+      <span id="imp_result" class="muted" style="margin-left:12px"></span></div>
+    </div>`;
+  $('#imp_go').addEventListener('click', async ()=>{
+    const url=$('#imp_url').value.trim(), text=$('#imp_text').value, assumeType=$('#imp_type').value;
+    $('#imp_result').textContent='Importing…';
+    try{
+      const r=await fetch('/import-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,text,assumeType})});
+      const d=await r.json();
+      $('#imp_result').textContent = d.ok ? `✅ ${d.added} added (${d.parsed} parsed, ${d.phones} phones)` : `❌ ${d.error||'failed'}`;
+      if(d.ok) loadStats().catch(()=>{});
+    }catch(e){ $('#imp_result').textContent='❌ '+e.message; }
+  });
+}
+
+async function show(view){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===view));
+  try {
+    if(view==='phones') await loadPhones();
+    else if(view==='contacts') await loadContacts();
+    else if(view==='profiles') await loadProfiles();
+    else if(view==='import') loadImport();
+    else if(view==='comments') await loadPosts(null, 'comment');
+    else await loadPosts(view==='all'?null:view);
+  } catch(e){
+    fatal('Could not reach the server ('+esc(e.message)+'). Is <code>node index.js</code> running? Open <b>http://localhost:8787</b>.');
+  }
+}
+$('#tabs').addEventListener('click', e=>{ if(e.target.dataset.view) show(e.target.dataset.view); });
+loadStats().catch(()=>{}); show('all');
+setInterval(()=>{ loadStats().catch(()=>{}); const a=document.querySelector('.tab.active'); if(a && a.dataset.view!=='import') show(a.dataset.view); }, 5000);
+</script>
+</body>
+</html>

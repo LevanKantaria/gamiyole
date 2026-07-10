@@ -1,0 +1,110 @@
+.page {
+  padding-top: 28px;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.filterBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+
+.filterDivider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 28px;
+  background: var(--line);
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterChip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.filterChip:hover {
+  border-color: var(--faint);
+}
+
+.filterChipOn {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+@media (max-width: 640px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* Stack label above its chips; the vertical divider reads oddly when the
+     groups wrap, so hide it and rely on the labels for separation. */
+  .filterBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  .filterDivider {
+    display: none;
+  }
+}
+
+.results {
+  margin-top: 20px;
+}
+
+.requestCta {
+  margin-top: 16px;
+  text-align: center;
+  padding: 24px;
+  background: var(--brand-soft);
+  border: 1px solid #dbeafe;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 420px;
+}

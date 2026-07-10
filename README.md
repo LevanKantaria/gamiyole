@@ -1,47 +1,56 @@
-# gamiyole.me
+# Gamiyole — Carpooling in Georgia
 
+Gamiyole connects drivers and passengers travelling between Georgian cities.
+Drivers publish a ride (route, date, time, price per seat); passengers search,
+check the driver's profile and reviews, and book a seat. Fuel costs get shared,
+roads get emptier, travel gets cheaper.
 
-<h1> About the App </h1>
+**Live:** [www.gamiyole.me](https://www.gamiyole.me)
 
- <p> This project was created to aid InterCity transportation. Users can Publish or Find drivers from one city to another.
+## Apps in this repo
 
-High gas price is a big problem for drivers. Sometimes people drive on long roads without any passengers. It would be great if Drivers could find someone who can accompany them and share Gas payment. This will make travelling cheaper and more enjoyable. Every driver must create a profile where they should upload: Contact info, Car pictures, Profile Picture. Passengers can give rating to drivers and leave comments on their profile.
- </p>
-<ul> <h2> Solved problems and benefits of Gamiyole  </h2>
+| Path | What it is |
+| --- | --- |
+| `src/` | Web app (React 18 + Redux Toolkit + Firebase) |
+| `native/ExpoApp/` | Mobile app (Expo / React Native), shares the same Firebase backend |
+| `functions/` | Cloud Functions for push notifications — see [functions/README.md](functions/README.md) |
 
- <li> Drivers save money by taking passengers. </li>
- <li>Passengers avoid busy public transport. </li>
-  <li> Roads befome relatively free and faster </li>
-  <li> C2 emission is reduced as efficiency of thransport raises</li>
+## Features
 
-Everyone is happy
+- Search rides by route and date; live upcoming-rides feed
+- Seat booking with transactional seat counts (no double-booking)
+- Public member profiles with photos, car details and **reviews for both
+  drivers and passengers** (one review per member pair, star rating + comment)
+- Driver/passenger roles, bilingual UI (Georgian / English)
+- Email + Google sign-in through the Firebase Auth SDK
+- **Web admin panel** at `/admin`: driver management, suspending/restoring
+  driver access, ride moderation and review moderation
 
- <h3> Live Preview :  www.gamiyole.me </h3>
- <img src="/public/gamiyole_1.jpg" alt="preview" />
- 
-   <img src="/public/gamiyole_2.jpg" alt="preview" />
-  <img src="/public/gamiyole_3.jpg" alt="preview" />
-   <img src="/public/Screenshot_1.jpg" alt="preview" />
+## Development
 
+```bash
+npm install
+npm start          # dev server on http://localhost:3000
+npm run build      # production build
+```
 
+## Firebase setup
 
+- Config lives in `src/firebase.js`.
+- Database rules: `database.rules.json` — deploy with
+  `firebase deploy --only database`. **The web app relies on these rules**
+  (public read of the ride list, per-user write protection, admin permissions).
+- Storage rules: `storage.rules` — deploy with `firebase deploy --only storage`.
 
+### Making someone an admin
 
+Admins are managed in the Firebase console (never from the client):
 
+1. Open Realtime Database and create `admins/<their-uid>: true`.
+2. That user now sees the **Admin panel** entry in the web navbar and the
+   database rules grant them moderation rights (suspend drivers, delete rides
+   and reviews).
 
-
- <ul> <h2>Features  </h2>
- 
-<li> Finding Published routes by Filtering Cities and Date; </li>
-<li> Creating User Profile ( uploading Images, filling Bio, Editing and Removing Uploaded Data );</li>
-  <li> Publishing your own routes </li>
-<li> Commenting and Rating Other People's profiles; </li>
-</ul>  
- <ul> <h2> Tools Used to achieve Project Goals  </h2>
-<li>React </li>
-<li>react-router-dom</li>
-<li> Redux/toolkit,</li>
-<li>Firebase Realtime Database,</li>
-<li>Firebase Storage, OAuth2.0, </li>
-<p>Components are written with plain HTML and CSS. </p>
-</ul> 
+Suspending a driver writes `disabledDrivers/<uid>`; the database rules then
+reject any new ride publication from that account, so enforcement is
+server-side — not just hidden UI.
