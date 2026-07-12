@@ -10,8 +10,10 @@
 // Expo's push service (no secret needed). Deploy: `firebase deploy --only functions`.
 
 import { onValueCreated, onValueUpdated } from 'firebase-functions/v2/database';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { initializeApp } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
+import { getAuth } from 'firebase-admin/auth';
 
 initializeApp();
 const db = getDatabase();
@@ -164,3 +166,52 @@ export const onReviewReceived = onValueCreated(
     });
   }
 );
+
+// --- Account deletion (App Store guideline 5.1.1(v)) ------------------------
+// Callable that erases the signed-in user's data and their auth account. Runs
+// with admin privileges so it bypasses security rules and doesn't need a recent
+// re-login on the client. The app calls this, then signs out.
+export const deleteAccount = onCall({ region: 'europe-west1' }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'You must be signed in.');
+
+  const updates = {};
+  // Owner-keyed nodes.
+  for (const path of [
+    `profile/${uid}`, `pictures/profile/${uid}`, `pictures/car/${uid}`,
+    `routines/${uid}`, `userBookings/${uid}`, `pushTokens/${uid}`,
+    `notificationPrefs/${uid}`, `verified/${uid}`, `disabledDrivers/${uid}`,
+    `comments/${uid}`, `ratings/${uid}`,
+  ]) {
+    updates[path] = null;
+  }
+
+  // Their published rides (and the bookings placed on them).
+  const rides = await db.ref('list').orderByChild('localId').equalTo(uid).once('value');
+  rides.forEach((c) => {
+    updates[`list/${c.key}`] = null;
+    updates[`bookings/${c.key}`] = null;
+  });
+
+  // Their ride requests.
+  const reqs = await db.ref('requests').orderByChild('passengerUid').equalTo(uid).once('value');
+  reqs.forEach((c) => {
+    updates[`requests/${c.key}`] = null;
+  });
+
+  // Reviews they wrote about others, and their bookings on others' rides.
+  const ratings = await db.ref('ratings').once('value');
+  ratings.forEach((subject) => {
+    if (subject.hasChild(uid)) updates[`ratings/${subject.key}/${uid}`] = null;
+  });
+  const bookings = await db.ref('bookings').once('value');
+  bookings.forEach((ride) => {
+    if (ride.hasChild(uid)) updates[`bookings/${ride.key}/${uid}`] = null;
+  });
+
+  if (Object.keys(updates).length) await db.ref().update(updates);
+
+  // Finally remove the auth account itself.
+  await getAuth().deleteUser(uid);
+  return { ok: true };
+});

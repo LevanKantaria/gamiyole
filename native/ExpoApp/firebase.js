@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
 import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,5 +31,7 @@ try {
 
 const db = getDatabase(app);
 const storage = getStorage(app);
+// Callable functions live in europe-west1 (same region as the database).
+const functions = getFunctions(app, 'europe-west1');
 
-export { app, auth, db, storage };
+export { app, auth, db, storage, functions };

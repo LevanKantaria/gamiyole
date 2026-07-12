@@ -234,6 +234,11 @@ const STRINGS = {
     passenger: "Passenger",
     verified: "Verified",
     editProfile: "Edit profile",
+    deleteAccount: "Delete account",
+    deletingAccount: "Deleting account…",
+    deleteAccountConfirmMsg:
+      "This permanently deletes your account and all your data — profile, published rides, bookings and reviews. This cannot be undone. Continue?",
+    deleteAccountFail: "Could not delete your account. Please try again.",
     completeProfileTitle: "Complete your profile",
     completeProfileHint:
       "A complete profile helps other members trust you. Name and a few words about you are required.",
@@ -519,6 +524,11 @@ const STRINGS = {
     passenger: "მგზავრი",
     verified: "დადასტურებული",
     editProfile: "პროფილის რედაქტირება",
+    deleteAccount: "ანგარიშის წაშლა",
+    deletingAccount: "ანგარიში იშლება…",
+    deleteAccountConfirmMsg:
+      "ეს სამუდამოდ წაშლის შენს ანგარიშსა და ყველა მონაცემს — პროფილს, გამოქვეყნებულ მგზავრობებს, ჯავშნებსა და შეფასებებს. ამის დაბრუნება შეუძლებელია. გავაგრძელო?",
+    deleteAccountFail: "ანგარიშის წაშლა ვერ მოხერხდა. სცადე თავიდან.",
     completeProfileTitle: "შეავსე პროფილი",
     completeProfileHint:
       "შევსებული პროფილი ნდობას მატებს. სახელი და რამდენიმე სიტყვა შენ შესახებ აუცილებელია.",

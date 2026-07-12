@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { subscribeRatingSummary } from '../services/ratings';
 import { getUserRideStats } from '../services/rides';
+import { deleteAccount } from '../services/account';
 import {
   NOTIFICATION_TYPES,
   subscribeNotificationPrefs,
@@ -27,6 +28,7 @@ const ProfileScreen = ({ navigation }) => {
   const [ratings, setRatings] = useState({ average: 0, count: 0, reviews: [] });
   const [stats, setStats] = useState({ publishedRides: 0, completedRides: 0, activeRides: 0 });
   const [notifPrefs, setNotifPrefs] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -54,6 +56,24 @@ const ProfileScreen = ({ navigation }) => {
     Alert.alert(t('profile.logOut'), t('profile.logOutConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('profile.logOut'), style: 'destructive', onPress: signOut },
+    ]);
+
+  const handleDeleteAccount = () =>
+    Alert.alert(t('profile.deleteAccountTitle'), t('profile.deleteAccountMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('profile.deleteAccountConfirm'),
+        style: 'destructive',
+        onPress: async () => {
+          setDeleting(true);
+          try {
+            await deleteAccount(); // signs out → auth state change navigates away
+          } catch {
+            setDeleting(false);
+            Alert.alert(t('common.error'), t('profile.deleteAccountFail'));
+          }
+        },
+      },
     ]);
 
   if (!profile) return <Loading text={t('profile.loadingProfile')} />;
@@ -233,6 +253,16 @@ const ProfileScreen = ({ navigation }) => {
         >
           <Text style={styles.privacyText}>{t('profile.privacyPolicy')}</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteLink}
+          onPress={handleDeleteAccount}
+          disabled={deleting}
+        >
+          <Text style={styles.deleteText}>
+            {deleting ? t('profile.deletingAccount') : t('profile.deleteAccount')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </Screen>
   );
@@ -334,6 +364,8 @@ const styles = StyleSheet.create({
   logout: { marginTop: spacing.xl },
   privacyLink: { alignSelf: 'center', marginTop: spacing.lg, padding: spacing.sm },
   privacyText: { fontSize: 13, color: colors.textMuted, textDecorationLine: 'underline' },
+  deleteLink: { alignSelf: 'center', marginTop: spacing.xs, padding: spacing.sm },
+  deleteText: { fontSize: 13, color: colors.danger, textDecorationLine: 'underline' },
 });
 
 export default ProfileScreen;

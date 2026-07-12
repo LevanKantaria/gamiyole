@@ -11,6 +11,7 @@ import {
 } from "../../services/profile";
 import { getUserRides } from "../../services/rides";
 import { getUserBookedRides } from "../../services/bookings";
+import { deleteAccount } from "../../services/account";
 import Avatar from "../UI/Avatar";
 import Lightbox from "../UI/Lightbox";
 import VerifiedBadge from "../UI/VerifiedBadge";
@@ -34,7 +35,19 @@ const ProfilePage = () => {
   const [uploadingCar, setUploadingCar] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(null);
   const [verified, setVerified] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const avatarInputRef = useRef(null);
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t("deleteAccountConfirmMsg"))) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(); // signs out; app redirects on the auth-state change
+    } catch {
+      setDeleting(false);
+      window.alert(t("deleteAccountFail"));
+    }
+  };
   const carInputRef = useRef(null);
 
   useEffect(() => {
@@ -276,6 +289,19 @@ const ProfilePage = () => {
       )}
 
       <Reviews targetUid={id} targetName={profile.name} />
+
+      {isMine && (
+        <div className={classes.dangerZone}>
+          <button
+            type="button"
+            className="btn btnDanger btnSm"
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+          >
+            {deleting ? t("deletingAccount") : t("deleteAccount")}
+          </button>
+        </div>
+      )}
 
       <Lightbox
         images={profile.carPhotos || []}

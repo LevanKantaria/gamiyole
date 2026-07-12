@@ -239,3 +239,11 @@
     justify-content: center;
   }
 }
+
+.dangerZone {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: center;
+}
