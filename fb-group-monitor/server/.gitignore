@@ -6,4 +6,8 @@ rides*.db
 rides*.db-wal
 rides*.db-shm
 
+# Export staging folder for moving the DB between machines (export-bundle.js).
+# Ignore the whole directory, not just *.db, so nothing in it can slip out.
+bundle/
+
 node_modules/
