@@ -1,26 +1,46 @@
 const FIELDS = ["enabled", "groupFilter", "endpoint", "apiKey", "crawlLimit"];
 
+const ALL_KEYS = [
+  ...FIELDS, "lastFlush", "lastError", "outbox", "crawlProgress",
+  "monitorEnabled", "monitorInterval", "monitorCap", "monitorColdCap", "monitorGroups",
+  "monitorLastCycle", "monitorLastResults", "monitorLoggedOut", "monitorCycle", "monitorError",
+];
+
+// Fill the form inputs from storage. Called ONLY when the popup opens.
+// It must never run on a refresh: the extension writes to storage constantly
+// (crawlProgress, monitorCycle, outbox, lastFlush…), and re-filling the inputs
+// on every write wipes whatever you're in the middle of typing.
+function fillForm(cfg) {
+  document.getElementById("enabled").checked = !!cfg.enabled;
+  document.getElementById("groupFilter").value = cfg.groupFilter || "";
+  document.getElementById("endpoint").value = cfg.endpoint || "http://localhost:8787/ingest";
+  document.getElementById("apiKey").value = cfg.apiKey || "";
+  if (cfg.crawlLimit) document.getElementById("crawlLimit").value = cfg.crawlLimit;
+  document.getElementById("monitorEnabled").checked = !!cfg.monitorEnabled;
+  document.getElementById("monitorInterval").value = cfg.monitorInterval || 30;
+  document.getElementById("monitorCap").value = cfg.monitorCap || 20;
+  document.getElementById("monitorColdCap").value = cfg.monitorColdCap || 40;
+  document.getElementById("monitorGroups").value = (cfg.monitorGroups || []).join("\n");
+}
+
+// Status/labels/buttons only — never touches an input, so it's safe to run on a
+// timer and on every storage change while you're typing.
+function refreshStatus() {
+  chrome.storage.local.get(ALL_KEYS, (cfg) => {
+    renderStatus(cfg);
+    renderCrawl(cfg.crawlProgress);
+    renderMonitor(cfg);
+  });
+}
+
+// Full load: inputs + status. Only on popup open.
 function load() {
-  chrome.storage.local.get(
-    [...FIELDS, "lastFlush", "lastError", "outbox", "crawlProgress",
-     "monitorEnabled", "monitorInterval", "monitorCap", "monitorColdCap", "monitorGroups", "monitorLastCycle",
-     "monitorLastResults", "monitorLoggedOut", "monitorCycle", "monitorError"],
-    (cfg) => {
-      document.getElementById("enabled").checked = !!cfg.enabled;
-      document.getElementById("groupFilter").value = cfg.groupFilter || "";
-      document.getElementById("endpoint").value = cfg.endpoint || "http://localhost:8787/ingest";
-      document.getElementById("apiKey").value = cfg.apiKey || "";
-      if (cfg.crawlLimit) document.getElementById("crawlLimit").value = cfg.crawlLimit;
-      document.getElementById("monitorEnabled").checked = !!cfg.monitorEnabled;
-      document.getElementById("monitorInterval").value = cfg.monitorInterval || 30;
-      document.getElementById("monitorCap").value = cfg.monitorCap || 20;
-      document.getElementById("monitorColdCap").value = cfg.monitorColdCap || 40;
-      document.getElementById("monitorGroups").value = (cfg.monitorGroups || []).join("\n");
-      renderStatus(cfg);
-      renderCrawl(cfg.crawlProgress);
-      renderMonitor(cfg);
-    }
-  );
+  chrome.storage.local.get(ALL_KEYS, (cfg) => {
+    fillForm(cfg);
+    renderStatus(cfg);
+    renderCrawl(cfg.crawlProgress);
+    renderMonitor(cfg);
+  });
 }
 
 // A cycle whose heartbeat has gone quiet died with the service worker.
@@ -190,8 +210,21 @@ document.getElementById("save").addEventListener("click", () => {
     monitorGroups: monitorGroupsFromUI(),
   };
   chrome.storage.local.set(values, () => {
-    document.getElementById("status").textContent = "Saved.";
-    setTimeout(load, 800);
+    // Report what was accepted instead of silently re-filling the textarea from
+    // the filtered list — that made rejected lines just vanish, which looked
+    // like the field "reset itself".
+    const typed = document.getElementById("monitorGroups").value
+      .split("\n").map((s) => s.trim()).filter(Boolean).length;
+    const kept = values.monitorGroups.length;
+    const dropped = typed - kept;
+    // Own element: #status belongs to renderStatus(), which would overwrite this
+    // on the very next refresh tick.
+    const el = document.getElementById("saveStatus");
+    el.textContent = dropped
+      ? `Saved ${kept} group URL${kept === 1 ? "" : "s"} · ${dropped} line${dropped === 1 ? "" : "s"} ignored (must contain facebook.com/groups/)`
+      : `Saved · ${kept} group URL${kept === 1 ? "" : "s"}`;
+    el.className = "hint" + (dropped ? " err" : "");
+    refreshStatus(); // status only — leaves your typing alone
   });
 });
 
@@ -228,8 +261,9 @@ document.getElementById("monitorTest").addEventListener("click", () => {
   });
 });
 
-chrome.storage.onChanged.addListener(load);
-// Storage events cover most updates, but "is this run still alive?" is
-// time-based — refresh while the popup is open so state is never misleading.
-setInterval(load, 2000);
+// Refresh STATUS only — never the inputs, or typing gets clobbered.
+chrome.storage.onChanged.addListener(refreshStatus);
+// "Is this run still alive?" is time-based, so poll as well as react to writes.
+setInterval(refreshStatus, 2000);
+// Inputs are populated exactly once, when the popup opens.
 load();
