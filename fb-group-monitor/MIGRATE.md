@@ -6,6 +6,7 @@ Three things have to travel, and they travel **differently**:
 |------|-----|-----|
 | **Code** (extension + server) | `git push` → `git clone` | already tracked; safe to publish |
 | **Database** (`rides.db`) | direct copy (USB / AirDrop / scp) | ⚠️ contains ~300 real phone numbers — **never commit it**, the repo is public |
+| **Firebase key** (`serviceAccount.json`) | direct copy (USB) | ⚠️ gitignored secret with full DB write access. **Without it, promoting rides to the website silently no-ops** |
 | **Dependencies** (`node_modules`) | **re-install on the target** | `better-sqlite3` is a *native* module compiled per-OS/arch/Node version — copying it will not work |
 
 ---
@@ -58,9 +59,20 @@ node export-bundle.js --verify rides.db
 
 You should see the **same row/phone counts and the same sha256** as step 2. Then:
 
+Also copy **`server\serviceAccount.json`** across the same way (USB — it's a
+gitignored secret). Without it the server still runs and captures fine, but
+promoting rides to the website is skipped with
+`auto-promote skipped: No Firebase credentials`.
+
 ```powershell
 node index.js          # dashboard at http://localhost:8787
 ```
+
+**Promotion is off unless you ask for it.** `start-server.bat` sets
+`AUTO_PROMOTE=1`, so the always-on machine publishes qualifying driver rides on
+startup and after each ingest. Running `node index.js` by hand leaves it off —
+promote manually with `node promote.js` (or `--dry-run`), and inspect decisions
+at `http://localhost:8787/promote/candidates.html`.
 
 ## 4. On the OTHER PC — the extension
 
