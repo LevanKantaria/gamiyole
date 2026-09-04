@@ -57,8 +57,11 @@
       <textarea id="monitorGroups" rows="4" placeholder="https://www.facebook.com/groups/123.../&#10;https://www.facebook.com/groups/456.../" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #ccd0d5;border-radius:6px;font-size:11px"></textarea>
       <div class="hint" id="monitorStatus" style="margin-top:4px">Off.</div>
       <div class="row" style="margin:6px 0 0;gap:6px">
-        <button id="monitorTest" style="width:auto;margin:0;padding:6px 12px;background:#65676b;flex:1">Run one cycle now</button>
-        <button id="resetSeen" style="width:auto;margin:0;padding:6px 12px;background:#65676b;flex:1" title="Forget which posts were seen so the next run re-scans from the top. Does not delete any captured data.">Reset seen</button>
+        <button id="monitorTest" style="width:auto;margin:0;padding:6px 12px;flex:1">Run now</button>
+        <button id="monitorStop" style="width:auto;margin:0;padding:6px 12px;background:#65676b;flex:1" title="Abort the cycle that's running right now.">Stop now</button>
+      </div>
+      <div class="row" style="margin:6px 0 0">
+        <button id="resetSeen" style="width:100%;margin:0;padding:6px 12px;background:#65676b" title="Forget which posts were seen so the next run re-scans from the top. Does not delete any captured data.">Reset seen</button>
       </div>
       <div class="hint" id="resetSeenStatus" style="margin-top:4px"></div>
     </div>

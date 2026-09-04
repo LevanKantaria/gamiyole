@@ -78,7 +78,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     withLock(() => enqueueInner(msg.posts)).then(() => withLock(flushInner));
     sendResponse({ ok: true, count: msg.posts.length });
   } else if (msg?.type === "RUN_MONITOR_NOW") {
-    runMonitorCycle();
+    runMonitorCycle(true); // manual: runs even if the toggle is off
+    sendResponse({ ok: true });
+  } else if (msg?.type === "STOP_MONITOR_NOW") {
+    stopMonitorNow();
     sendResponse({ ok: true });
   }
   return true; // keep the channel open for async response
@@ -105,12 +108,25 @@ async function getMonitorCfg() {
 }
 
 // (Re)create the alarm to match the configured interval.
+// Important: if an alarm at the right cadence already exists we leave it ALONE,
+// so saving unrelated settings doesn't reset the countdown or kick off a run.
+// Only a fresh enable (no alarm yet) starts one shortly after.
 async function syncMonitorAlarm() {
   const cfg = await getMonitorCfg();
-  await chrome.alarms.clear("monitor");
-  if (cfg.enabled && cfg.groups.length) {
-    chrome.alarms.create("monitor", { periodInMinutes: cfg.interval, delayInMinutes: 0.1 });
+  const existing = await chrome.alarms.get("monitor");
+
+  if (!cfg.enabled || !cfg.groups.length) {
+    if (existing) await chrome.alarms.clear("monitor");
+    return;
   }
+  if (existing && Math.abs((existing.periodInMinutes || 0) - cfg.interval) < 0.01) return;
+
+  await chrome.alarms.clear("monitor");
+  chrome.alarms.create("monitor", {
+    periodInMinutes: cfg.interval,
+    // fresh enable → first run in ~12s; interval change → wait a full interval
+    delayInMinutes: existing ? cfg.interval : 0.2,
+  });
 }
 
 // Add FB's "chronological" sort so newest posts are at the top.
@@ -146,42 +162,107 @@ function waitForComplete(tabId, timeoutMs = 45000) {
   });
 }
 
+// One round-trip to the content script; resolves null if it can't be reached.
+function askTab(tabId, message, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (v) => { if (!settled) { settled = true; clearTimeout(timer); resolve(v); } };
+    const timer = setTimeout(() => finish(null), timeoutMs);
+    try {
+      chrome.tabs.sendMessage(tabId, message, (resp) => {
+        void chrome.runtime.lastError; // "receiving end does not exist" → null
+        finish(resp || null);
+      });
+    } catch (e) { finish(null); }
+  });
+}
+
+// Poll until the feed has actually rendered, instead of guessing with a fixed
+// sleep. Returns the last PING response, or null if the page never got ready.
+async function waitForFeed(tabId, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  let last = null;
+  while (Date.now() < deadline) {
+    const r = await askTab(tabId, { type: "PING" }, 5000);
+    if (r) {
+      last = r;
+      if (r.loggedOut || r.ready) return r;
+    }
+    await sleep(1000);
+  }
+  return last; // not ready (or never answered)
+}
+
 // Navigate the tab to a group and run one incremental monitor pass.
 // active:false — navigate in the background so the monitor never steals focus
 // or flips the page in front of you. (Keep the Chrome window visible/un-minimized
 // so the background tab's timers aren't heavily throttled.)
+// Returns { status, captured } where status is one of:
+//   ok | logged-out | unreachable | not-ready | timeout | stopped | error
 async function monitorOneGroup(tabId, url, cap = 20, coldCap = 40) {
   await chrome.tabs.update(tabId, { url: chronoUrl(url), active: false });
   await waitForComplete(tabId);
-  await sleep(4500); // let the SPA render the feed
-  const captured = await new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(0), 120000);
-    chrome.tabs.sendMessage(tabId, { type: "START_MONITOR", cap, coldCap }, (resp) => {
-      clearTimeout(timer);
-      void chrome.runtime.lastError;
-      resolve(resp && typeof resp.captured === "number" ? resp.captured : 0);
-    });
-  });
-  return captured;
+
+  const ping = await waitForFeed(tabId);
+  if (!ping) return { status: "unreachable", captured: 0 };
+  if (ping.loggedOut) return { status: "logged-out", captured: 0 };
+  if (!ping.ready) return { status: "not-ready", captured: 0 };
+
+  const resp = await askTab(tabId, { type: "START_MONITOR", cap, coldCap }, 180000);
+  if (!resp) return { status: "timeout", captured: 0 };
+  return {
+    status: resp.reason === "ok" ? "ok" : resp.reason || "ok",
+    captured: typeof resp.captured === "number" ? resp.captured : 0,
+  };
+}
+
+// Live cycle state, mirrored into storage so the popup can show exactly what's
+// happening (and detect a cycle that died with the service worker).
+async function setCycleState(patch) {
+  const { monitorCycle = {} } = await chrome.storage.local.get("monitorCycle");
+  await chrome.storage.local.set({ monitorCycle: { ...monitorCycle, ...patch, at: Date.now() } });
 }
 
 let cycleRunning = false;
-async function runMonitorCycle() {
+let abortCycle = false;
+
+// Abort a running cycle now: stop the in-flight scroll in the tab and prevent
+// the loop from advancing to the next group.
+async function stopMonitorNow() {
+  abortCycle = true;
+  const { monitorTabId } = await chrome.storage.local.get("monitorTabId");
+  if (monitorTabId) await askTab(monitorTabId, { type: "STOP_MONITOR" }, 3000);
+  await setCycleState({ running: false, status: "stopped" });
+}
+
+async function runMonitorCycle(manual = false) {
   if (cycleRunning) return;
   const cfg = await getMonitorCfg();
-  if (!cfg.enabled || !cfg.groups.length) return;
+  if (!cfg.groups.length) return;
+  if (!cfg.enabled && !manual) return; // scheduled runs require the toggle
+
   cycleRunning = true;
+  abortCycle = false;
   const results = [];
   let loggedOut = false;
+  await setCycleState({
+    running: true, status: "running", startedAt: Date.now(),
+    index: 0, total: cfg.groups.length, group: null,
+  });
+
   try {
     const tab = await ensureMonitorTab();
-    for (const url of cfg.groups) {
-      // Stop promptly if the user turned the monitor off mid-cycle.
+    for (let i = 0; i < cfg.groups.length; i++) {
+      const url = cfg.groups[i];
+      // Stop promptly if the user paused/stopped the monitor mid-cycle.
       const { monitorEnabled } = await chrome.storage.local.get("monitorEnabled");
-      if (!monitorEnabled) break;
-      const captured = await monitorOneGroup(tab.id, url, cfg.cap, cfg.coldCap);
-      if (captured < 0) { loggedOut = true; break; } // content script flagged logged-out
-      results.push({ url, captured });
+      if (abortCycle || (!monitorEnabled && !manual)) break;
+
+      await setCycleState({ index: i + 1, group: url, status: "running" });
+      const r = await monitorOneGroup(tab.id, url, cfg.cap, cfg.coldCap);
+      results.push({ url, captured: r.captured, status: r.status });
+      if (r.status === "logged-out") { loggedOut = true; break; }
+      if (abortCycle) break;
       await sleep(3000); // small gap between groups
     }
     await withLock(flushInner); // push anything still buffered
@@ -193,6 +274,11 @@ async function runMonitorCycle() {
       monitorLastCycle: new Date().toISOString(),
       monitorLastResults: results,
       monitorLoggedOut: loggedOut,
+    });
+    await setCycleState({
+      running: false,
+      status: abortCycle ? "stopped" : loggedOut ? "logged-out" : "idle",
+      group: null,
     });
   }
 }
@@ -207,10 +293,25 @@ chrome.alarms.onAlarm.addListener((a) => {
 // Keep the alarm in sync with config changes, and on startup/install.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
+  // Turning the monitor OFF is a real pause: abort the run that's in flight,
+  // don't just skip the next one.
+  if (changes.monitorEnabled && changes.monitorEnabled.newValue === false) {
+    stopMonitorNow();
+  }
   if (changes.monitorEnabled || changes.monitorInterval || changes.monitorGroups) {
     syncMonitorAlarm();
   }
 });
-chrome.runtime.onStartup.addListener(syncMonitorAlarm);
-chrome.runtime.onInstalled.addListener(syncMonitorAlarm);
-syncMonitorAlarm();
+
+// A restarted service worker means any cycle that was running is dead — clear
+// the flag so the UI doesn't show a phantom "running" forever.
+async function bootstrap() {
+  const { monitorCycle } = await chrome.storage.local.get("monitorCycle");
+  if (monitorCycle && monitorCycle.running) {
+    await setCycleState({ running: false, status: "interrupted", group: null });
+  }
+  await syncMonitorAlarm();
+}
+chrome.runtime.onStartup.addListener(bootstrap);
+chrome.runtime.onInstalled.addListener(bootstrap);
+bootstrap();

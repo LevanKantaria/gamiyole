@@ -205,6 +205,23 @@
   // uses this as its "caught up, stop scrolling" boundary.
   let lastScanSawSeen = false;
 
+  // ---- run lock ---------------------------------------------------------------
+  // Exactly one explicit run (crawl / harvest / monitor) at a time, and the
+  // MutationObserver's live scan must never run alongside one.
+  //
+  // Why this matters: scrolling during a monitor run fires the observer, whose
+  // live scan would capture the freshly-rendered posts FIRST and add them to
+  // SEEN. The monitor's own scan would then see them as already-seen, flip
+  // lastScanSawSeen, and stop at once — so the monitor silently captured almost
+  // nothing whenever the "Monitoring on" toggle happened to be enabled.
+  let activeRun = null; // 'crawl' | 'harvest' | 'monitor' | null
+  function beginRun(kind) {
+    if (activeRun) return false;
+    activeRun = kind;
+    return true;
+  }
+  function endRun() { activeRun = null; }
+
   // Returns the number of NEW POSTS captured this pass (comments don't count
   // toward the crawl limit, but are still captured and forwarded).
   // `force` bypasses the enabled toggle; `cap` limits how many new posts to take.
@@ -212,6 +229,8 @@
   // only trusts relative dates ("today") from 'monitor' captures (genuinely new).
   function scan(force = false, cap = Infinity, ignoreFilter = false, via = "live") {
     lastScanSawSeen = false;
+    // Never let the live/observer scan run inside an explicit run (see run lock).
+    if (!force && activeRun) return 0;
     if (!force && !enabled) return 0;
     if (!ignoreFilter && groupFilter && !location.pathname.includes(groupFilter)) return 0;
     if (cap <= 0) return 0;
@@ -303,10 +322,13 @@
   }
 
   async function runCrawl(limit) {
-    if (crawl && crawl.running) return; // already crawling
     if (groupFilter && !location.pathname.includes(groupFilter)) {
       crawl = { running: false, captured: 0, limit };
       reportCrawl("wrong-group"); // not on the configured group page
+      return;
+    }
+    if (!beginRun("crawl")) {
+      reportCrawl("busy"); // a crawl/harvest/monitor run is already in progress
       return;
     }
 
@@ -317,33 +339,39 @@
     const WAIT_MS = 2500;       // let posts render + network settle after each scroll
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-    // Capture whatever is already on screen first (never exceed the limit).
-    crawl.captured += scan(true, limit - crawl.captured, false, "crawl");
-    reportCrawl("running");
-
-    while (crawl.running && crawl.captured < limit && crawl.idleRounds < MAX_IDLE) {
-      const beforeHeight = document.body.scrollHeight;
-      window.scrollTo(0, document.body.scrollHeight);
-      await wait(WAIT_MS);
-
-      const newCount = scan(true, limit - crawl.captured, false, "crawl");
-      crawl.captured += newCount;
-
-      // Idle if nothing new was captured AND the page didn't grow taller.
-      const grew = document.body.scrollHeight > beforeHeight;
-      if (newCount === 0 && !grew) crawl.idleRounds += 1;
-      else crawl.idleRounds = 0;
-
+    let reason = "end-of-feed";
+    try {
+      // Capture whatever is already on screen first (never exceed the limit).
+      crawl.captured += scan(true, limit - crawl.captured, false, "crawl");
       reportCrawl("running");
-    }
 
-    const reason = !crawl.running
-      ? "stopped"
-      : crawl.captured >= limit
-      ? "limit-reached"
-      : "end-of-feed";
-    crawl.running = false;
-    reportCrawl(reason);
+      while (crawl.running && crawl.captured < limit && crawl.idleRounds < MAX_IDLE) {
+        const beforeHeight = document.body.scrollHeight;
+        window.scrollTo(0, document.body.scrollHeight);
+        await wait(WAIT_MS);
+
+        const newCount = scan(true, limit - crawl.captured, false, "crawl");
+        crawl.captured += newCount;
+
+        // Idle if nothing new was captured AND the page didn't grow taller.
+        const grew = document.body.scrollHeight > beforeHeight;
+        if (newCount === 0 && !grew) crawl.idleRounds += 1;
+        else crawl.idleRounds = 0;
+
+        reportCrawl("running");
+      }
+      reason = !crawl.running ? "stopped"
+        : crawl.captured >= limit ? "limit-reached"
+        : "end-of-feed";
+    } catch (e) {
+      reason = "error";
+    } finally {
+      // Clear the flag BEFORE the final report, so crawlProgress.active is false
+      // and the popup's Start button can never stay disabled after a failure.
+      crawl.running = false;
+      endRun();
+      reportCrawl(reason);
+    }
   }
 
   function stopCrawl() {
@@ -397,10 +425,10 @@
   }
 
   async function runHarvest() {
-    if (harvest && harvest.running) return;
     const postId = currentPostId();
     const groupId = currentGroupId();
     if (!postId) { harvest = { running: false, captured: 0 }; reportHarvest("not-a-post"); return; }
+    if (!beginRun("harvest")) { reportHarvest("busy"); return; }
 
     harvest = { running: true, captured: 0 };
     reportHarvest("running");
@@ -417,27 +445,33 @@
     }
     reportHarvest("running");
 
-    while (harvest.running && idle < MAX_IDLE) {
-      const beforeH = document.body.scrollHeight;
-      const clicked = clickExpanders();          // "view more comments/replies"
-      window.scrollTo(0, document.body.scrollHeight);
-      await wait(WAIT_MS);
+    let reason = "done";
+    try {
+      while (harvest.running && idle < MAX_IDLE) {
+        const beforeH = document.body.scrollHeight;
+        const clicked = clickExpanders();          // "view more comments/replies"
+        window.scrollTo(0, document.body.scrollHeight);
+        await wait(WAIT_MS);
 
-      const batch = extractComments(document, postId, groupId); // already dedups via SEEN
-      if (batch.length) {
-        chrome.runtime.sendMessage({ type: "POSTS", posts: batch }, () => void chrome.runtime.lastError);
-        harvest.captured += batch.length;
+        const batch = extractComments(document, postId, groupId); // already dedups via SEEN
+        if (batch.length) {
+          chrome.runtime.sendMessage({ type: "POSTS", posts: batch }, () => void chrome.runtime.lastError);
+          harvest.captured += batch.length;
+        }
+
+        const grew = document.body.scrollHeight > beforeH;
+        if (batch.length === 0 && clicked === 0 && !grew) idle += 1;
+        else idle = 0;
+        reportHarvest("running");
       }
-
-      const grew = document.body.scrollHeight > beforeH;
-      if (batch.length === 0 && clicked === 0 && !grew) idle += 1;
-      else idle = 0;
-      reportHarvest("running");
+      reason = !harvest.running ? "stopped" : "done";
+    } catch (e) {
+      reason = "error";
+    } finally {
+      harvest.running = false;
+      endRun();
+      reportHarvest(reason);
     }
-
-    const reason = !harvest.running ? "stopped" : "done";
-    harvest.running = false;
-    reportHarvest(reason);
   }
 
   function stopHarvest() {
@@ -466,15 +500,24 @@
 
   // cap = max NEW posts on a warm (ongoing) run; coldCap = max on the first
   // (cold) run when seeding a brand-new group. Set independently from the popup.
+  function stopMonitor() {
+    if (monitor) monitor.running = false;
+  }
+
+  // Returns { captured, reason } — the scheduler needs to tell a real "0 new
+  // posts" apart from "logged out" / "stopped" / "couldn't run".
   async function runMonitor(cap = 20, coldCap = 40) {
-    if (monitor && monitor.running) return 0;
+    if (loggedOut()) return { captured: 0, reason: "logged-out" };
+    if (!beginRun("monitor")) return { captured: 0, reason: "busy" };
+
     await preloadSeen();
     monitor = { running: true, captured: 0 };
-    if (loggedOut()) { monitor.running = false; return -1; } // signal to scheduler
 
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const MAX_SCROLLS = 25; // hard backstop so a run can never dive endlessly
 
+    let reason = "ok";
+    try {
     // Cold start: the first time we monitor a group we have no boundary to stop
     // at, so a normal run would dive the whole feed. Instead, seed the recent
     // posts (up to coldCap) and stop — later runs pick up new posts via the
@@ -498,7 +541,11 @@
         monitor.captured += n;
         if (document.body.scrollHeight <= beforeH && n === 0) break; // end of feed
       }
-      if (gid) {
+      // Only mark the group seeded if the cold start actually ran to completion.
+      // If it was stopped part-way, leaving it unseeded means the next run
+      // resumes the cold start instead of switching to boundary logic and
+      // never finishing the seed.
+      if (gid && monitor.running) {
         await chrome.storage.local.set({ seededGroups: [...new Set([...seededGroups, gid])] });
       }
     } else {
@@ -521,10 +568,17 @@
         if (document.body.scrollHeight <= beforeH && n === 0) break; // end of feed
       }
     }
-
-    await persistSeen();
-    monitor.running = false;
-    return monitor.captured;
+      if (!monitor.running) reason = "stopped"; // aborted via STOP_MONITOR
+    } catch (e) {
+      reason = "error";
+    } finally {
+      // Persist the seen-set even on abort/error so the next run still has a
+      // boundary and doesn't re-dive the whole feed.
+      try { await persistSeen(); } catch (e) { void e; }
+      monitor.running = false;
+      endRun();
+    }
+    return { captured: monitor.captured, reason };
   }
 
   // Commands from the popup / background scheduler (via chrome.tabs.sendMessage).
@@ -543,10 +597,24 @@
       sendResponse({ ok: true });
     } else if (msg?.type === "START_MONITOR") {
       // resolve when the incremental crawl finishes so the scheduler can advance
-      runMonitor(Number(msg.cap) || 20, Number(msg.coldCap) || 40).then((captured) =>
-        sendResponse({ ok: true, captured })
+      runMonitor(Number(msg.cap) || 20, Number(msg.coldCap) || 40).then((res) =>
+        sendResponse({ ok: true, ...res })
       );
       return true; // async response
+    } else if (msg?.type === "STOP_MONITOR") {
+      stopMonitor();
+      sendResponse({ ok: true });
+    } else if (msg?.type === "PING") {
+      // Readiness probe: lets the scheduler wait for the feed to actually render
+      // instead of guessing with a fixed sleep, and distinguishes an unreachable
+      // page from a genuine "no new posts".
+      sendResponse({
+        ok: true,
+        ready: !!document.querySelector('[data-ad-rendering-role="profile_name"]'),
+        loggedOut: loggedOut(),
+        busy: !!activeRun,
+        url: location.href,
+      });
     }
     return true;
   });

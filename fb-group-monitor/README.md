@@ -69,7 +69,7 @@ Data lives in `server/rides.db` (SQLite), keyed by post id so re-ingesting dedup
 - `GET /stats` — totals, driver/passenger split, top routes.
 
 Each new post also prints as it arrives, e.g.
-`• [driver] Tbilisi→Batumi · MemorablePear6922 · +995577112233 · <text>`
+`• [driver] Tbilisi→Batumi · <author> · +9955XXXXXXXX · <text>`
 
 ## Paste-import a comment thread
 
@@ -156,6 +156,30 @@ server dedups, so nothing is double-stored.
 - **Self-healing:** if a cycle is cut short (worker suspended, machine asleep), the next one catches up, because "stop when you hit seen posts" naturally resumes from where it left off.
 - If Facebook logs out, the monitor detects it and the popup shows a warning instead of silently capturing nothing.
 - **"Run one cycle now"** triggers a cycle immediately for testing.
+
+### Reliability guarantees (and the test that proves them)
+
+`node test/extension.test.js` runs the real `content.js` against a simulated
+Facebook feed with a stubbed `chrome` API. It asserts:
+
+- **One run at a time.** Crawl / harvest / monitor take a run lock, and the
+  `MutationObserver`'s live scan is suppressed while any run is active. Without
+  this the live scan stole freshly-rendered posts, so the monitor saw them as its
+  "already captured" boundary and stopped early — the test catches exactly that
+  regression (it fails with 2/4 posts captured and a stray `via:"live"` tag).
+- **The UI can never get stuck.** Every run reports a final state from a
+  `finally`, with the active flag cleared *before* the report. The popup also
+  treats a run whose heartbeat went quiet (closed/navigated tab) as finished.
+- **Stop always works.** `STOP_MONITOR` aborts an in-flight scroll; Stop for a
+  crawl messages the tab that started it *plus* every open group tab, and clears
+  local state regardless. Turning the monitor off aborts the running cycle rather
+  than just skipping the next one.
+- **An aborted cold start stays unseeded**, so the next run resumes seeding
+  instead of silently switching to boundary logic with a half-seeded group.
+- **Failures are never silent.** The scheduler polls a `PING` until the feed
+  actually renders (instead of a fixed sleep) and reports `unreachable` /
+  `not-ready` / `timeout` / `logged-out` per group, shown in the popup — so a
+  broken group can't masquerade as "0 new posts".
 
 ### Two modes
 
