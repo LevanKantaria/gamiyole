@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import classes from "./RequestsPage.module.css";
 import { useT } from "../../i18n";
+import Seo from "../UI/Seo";
 import { subscribeRequests } from "../../services/requests";
 import RequestCard from "./RequestCard";
 import RequestForm from "./RequestForm";
@@ -24,6 +25,7 @@ const RequestsPage = () => {
   if (!uid) {
     return (
       <div className={`container ${classes.gate}`}>
+        <Seo title={t("seoRequestsTitle")} description={t("seoRequestsDesc")} />
         <div className={`card ${classes.gateCard}`}>
           <h2>{t("signInToRequest")}</h2>
           <Link to="/signin" className="btn btnPrimary">
@@ -36,6 +38,7 @@ const RequestsPage = () => {
 
   return (
     <div className={`container ${classes.page}`}>
+      <Seo title={t("seoRequestsTitle")} description={t("seoRequestsDesc")} />
       <h1 className={classes.title}>{t("requestsTitle")}</h1>
       <p className={classes.subtitle}>{t("requestsSubtitle")}</p>
 

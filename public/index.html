@@ -1,19 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ka">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1d4ed8" />
+
+    <!-- Default title/description for the no-JS pass. Per-page values (title,
+         description, canonical, og:title/description/url) are set at runtime by
+         react-helmet-async (see components/UI/Seo.js) so each route is unique —
+         they are intentionally NOT duplicated here to avoid conflicting tags. -->
+    <title>Gamiyole — გააზიარე მგზავრობა ქალაქებს შორის | Carpool Georgia</title>
     <meta
-      name="description"
-      content="Gamiyole — carpooling in Georgia. Find a ride between cities, or publish your own and split the cost of the trip."
+      name="keywords"
+      content="gamiyole, გამიყოლე, მგზავრობა ქალაქებს შორის, გასაზიარებელი მგზავრობა, თანამგზავრი, თბილისი ბათუმი, თბილისი ქუთაისი, თბილისი ზუგდიდი, carpool georgia, rideshare georgia, intercity rides tbilisi batumi"
     />
-    <meta property="og:title" content="Gamiyole — Carpooling in Georgia" />
-    <meta
-      property="og:description"
-      content="Find a ride between Georgian cities or share your car and split fuel costs."
-    />
+
+    <!-- Open Graph / social (static — Helmet sets og:title/description/url per page) -->
+    <meta property="og:site_name" content="Gamiyole" />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://gamiyole.me/logo512.png" />
+    <meta property="og:locale" content="ka_GE" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Gamiyole — Carpooling across Georgia" />
+    <meta
+      name="twitter:description"
+      content="Find or publish intercity car rides across Georgia — Tbilisi, Batumi, Kutaisi and more. Split the fuel cost."
+    />
+    <meta name="twitter:image" content="https://gamiyole.me/logo512.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -24,10 +39,48 @@
     <link rel="icon" type="image/png" sizes="192x192" href="%PUBLIC_URL%/logo192.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>Gamiyole — Carpooling in Georgia</title>
+
+    <!-- Structured data: helps Google understand the site + show a rich result -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://gamiyole.me/#organization",
+            "name": "Gamiyole",
+            "url": "https://gamiyole.me/",
+            "logo": "https://gamiyole.me/logo512.png",
+            "email": "info@gamiyole.me",
+            "areaServed": { "@type": "Country", "name": "Georgia" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://gamiyole.me/#website",
+            "url": "https://gamiyole.me/",
+            "name": "Gamiyole",
+            "description": "Carpooling and intercity ride sharing across Georgia.",
+            "publisher": { "@id": "https://gamiyole.me/#organization" },
+            "inLanguage": ["ka", "en"],
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://gamiyole.me/find?to={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      Gamiyole — carpooling across Georgia. Find or publish intercity rides
+      between Tbilisi, Batumi, Kutaisi and other cities. Please enable JavaScript
+      to use the app.
+    </noscript>
     <div id="root"></div>
   </body>
 </html>

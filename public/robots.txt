@@ -1,3 +1,11 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Keep noise / private pages out of the index
+Disallow: /admin
+Disallow: /complete-profile
+Disallow: /signin
+Disallow: /signup
+
+Sitemap: https://gamiyole.me/sitemap.xml

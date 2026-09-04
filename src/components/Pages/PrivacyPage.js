@@ -1,5 +1,6 @@
 import classes from "./PrivacyPage.module.css";
-import { useLang } from "../../i18n";
+import { useLang, useT } from "../../i18n";
+import Seo from "../UI/Seo";
 
 const EnglishPolicy = () => (
   <>
@@ -295,8 +296,10 @@ const GeorgianPolicy = () => (
 // Language follows the app-wide toggle in the navbar.
 const PrivacyPage = () => {
   const lang = useLang();
+  const t = useT();
   return (
     <div className={`container ${classes.page}`}>
+      <Seo title={t("seoPrivacyTitle")} description={t("seoPrivacyDesc")} />
       <article className={`card ${classes.doc}`}>
         {lang === "GE" ? <GeorgianPolicy /> : <EnglishPolicy />}
       </article>

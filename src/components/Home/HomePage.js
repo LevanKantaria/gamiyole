@@ -4,6 +4,7 @@ import classes from "./HomePage.module.css";
 import { useT, useLang, cityLabel } from "../../i18n";
 import { subscribeUpcomingRides, todayISO } from "../../services/rides";
 import { subscribeExternalRides } from "../../services/external";
+import Seo from "../UI/Seo";
 import SearchBar from "../Rides/SearchBar";
 import RideList from "../Rides/RideList";
 import RideSkeleton from "../Rides/RideSkeleton";
@@ -64,6 +65,7 @@ const HomePage = () => {
 
   return (
     <>
+      <Seo title={t("seoHomeTitle")} description={t("seoHomeDesc")} />
       <section className={classes.hero}>
         <div className={`container ${classes.heroInner}`}>
           <h1 className={classes.title}>{t("heroTitle")}</h1>

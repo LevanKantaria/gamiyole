@@ -82,6 +82,23 @@ const STRINGS = {
       "Find a ride between cities or share your car — split fuel costs, travel cheaper, meet good people.",
     heroFind: "Find a ride",
     heroDrive: "I'm driving",
+    // SEO (page titles + descriptions)
+    seoHomeTitle: "Carpool & intercity rides across Georgia",
+    seoHomeDesc:
+      "Find or publish a shared car ride between Tbilisi, Batumi, Kutaisi and other Georgian cities. Split fuel costs and travel cheaper with Gamiyole.",
+    seoFindTitle: "Find a ride between cities",
+    seoFindDesc:
+      "Search shared car rides between Georgian cities — pick your route and date, see the driver, price and free seats.",
+    seoRouteDesc:
+      "Shared car rides on this route across Georgia. See drivers, prices and free seats, or publish your own ride.",
+    seoPublishTitle: "Publish a ride",
+    seoPublishDesc:
+      "Driving between cities? Publish your route, set the price and fill your empty seats. Free to post on Gamiyole.",
+    seoRequestsTitle: "Ride requests",
+    seoRequestsDesc:
+      "See passengers looking for rides between Georgian cities, or post your own request so drivers can find you.",
+    seoPrivacyTitle: "Privacy policy",
+    seoPrivacyDesc: "How Gamiyole collects, uses and protects your data.",
     // search
     from: "From",
     to: "To",
@@ -377,6 +394,23 @@ const STRINGS = {
       "იპოვე მგზავრობა ქალაქებს შორის ან წაიყვანე მგზავრები — გაიყავით საწვავის ხარჯი და იმგზავრეთ ერთად.",
     heroFind: "მოძებნე მგზავრობა",
     heroDrive: "მე ვმართავ",
+    // SEO (page titles + descriptions)
+    seoHomeTitle: "გააზიარე მგზავრობა ქალაქებს შორის საქართველოში",
+    seoHomeDesc:
+      "იპოვე ან გამოაქვეყნე გასაზიარებელი მგზავრობა თბილისი–ბათუმი, ქუთაისი, ზუგდიდი და სხვა ქალაქებს შორის. გაიყავი საწვავის ხარჯი და იმგზავრე იაფად.",
+    seoFindTitle: "იპოვე მგზავრობა ქალაქებს შორის",
+    seoFindDesc:
+      "მოძებნე გასაზიარებელი მგზავრობა ქართულ ქალაქებს შორის — აირჩიე მარშრუტი და თარიღი, ნახე მძღოლი, ფასი და თავისუფალი ადგილები.",
+    seoRouteDesc:
+      "გასაზიარებელი მგზავრობა ამ მარშრუტზე. ნახე მძღოლები, ფასები და თავისუფალი ადგილები, ან გამოაქვეყნე შენი მგზავრობა.",
+    seoPublishTitle: "გამოაქვეყნე მგზავრობა",
+    seoPublishDesc:
+      "მიემგზავრები ქალაქებს შორის? გამოაქვეყნე მარშრუტი, დააფიქსირე ფასი და შეავსე ცარიელი ადგილები. გამოქვეყნება უფასოა.",
+    seoRequestsTitle: "მგზავრობის მოთხოვნები",
+    seoRequestsDesc:
+      "ნახე მგზავრები, რომლებიც ეძებენ მგზავრობას ქალაქებს შორის, ან დაამატე შენი მოთხოვნა, რომ მძღოლებმა გიპოვონ.",
+    seoPrivacyTitle: "კონფიდენციალურობის პოლიტიკა",
+    seoPrivacyDesc: "როგორ აგროვებს, იყენებს და იცავს Gamiyole შენს მონაცემებს.",
     from: "საიდან",
     to: "სად",
     date: "თარიღი",

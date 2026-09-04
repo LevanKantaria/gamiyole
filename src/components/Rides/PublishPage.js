@@ -3,6 +3,7 @@ import { Link, useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 import classes from "./PublishPage.module.css";
 import { useT, useLang, DAYS_SHORT, RIDE_BADGES, cityLabel } from "../../i18n";
+import Seo from "../UI/Seo";
 import { publishRide, todayISO } from "../../services/rides";
 import { isProfileComplete } from "../../services/profile";
 import {
@@ -75,6 +76,7 @@ const PublishPage = () => {
   if (!uid) {
     return (
       <div className={`container ${classes.gate}`}>
+        <Seo title={t("seoPublishTitle")} description={t("seoPublishDesc")} />
         <div className={`card ${classes.gateCard}`}>
           <h2>{t("signInToPublish")}</h2>
           <Link to="/signin" className="btn btnPrimary">
@@ -206,6 +208,7 @@ const PublishPage = () => {
 
   return (
     <div className={`container ${classes.page}`}>
+      <Seo title={t("seoPublishTitle")} description={t("seoPublishDesc")} />
       <div className={`card ${classes.formCard}`}>
         <h1 className={classes.title}>{t("publishTitle")}</h1>
 

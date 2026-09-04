@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useHistory, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import classes from "./FindPage.module.css";
-import { useT } from "../../i18n";
+import { useT, useLang, cityLabel } from "../../i18n";
+import Seo from "../UI/Seo";
 import {
   subscribeUpcomingRides,
   getRidesForDate,
@@ -21,6 +22,7 @@ import RequestForm from "../Requests/RequestForm";
 // Search state lives in the URL (?from=&to=&when=) so results are shareable.
 const FindPage = () => {
   const t = useT();
+  const lang = useLang();
   const history = useHistory();
   const location = useLocation();
   const { uid } = useSelector((state) => state.auth);
@@ -115,8 +117,22 @@ const FindPage = () => {
   const filtered = source === null ? null : filterRides(source, applied);
   const showSkeleton = searching || filtered === null;
 
+  // A route-specific title/description when both cities are chosen — this is what
+  // lets "/find?from=Tbilisi&to=Batumi" rank for "Tbilisi Batumi" searches.
+  const hasRoute = applied.departure && applied.destination;
+  const seoTitle = hasRoute
+    ? `${cityLabel(applied.departure, lang)} → ${cityLabel(applied.destination, lang)}`
+    : t("seoFindTitle");
+  const seoDesc = hasRoute ? t("seoRouteDesc") : t("seoFindDesc");
+
   return (
     <div className={`container ${classes.page}`}>
+      <Seo
+        title={seoTitle}
+        description={seoDesc}
+        path={hasRoute ? `/find?from=${applied.departure}&to=${applied.destination}` : undefined}
+      />
+
       <h1 className={classes.title}>{t("resultsFor")}</h1>
       <SearchBar values={search} onChange={setSearch} onSubmit={submit} allowAny />
 
