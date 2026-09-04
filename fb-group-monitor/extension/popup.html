@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { font: 13px/1.4 -apple-system, system-ui, sans-serif; width: 300px; margin: 0; padding: 14px; color: #1c1e21; }
+      h1 { font-size: 14px; margin: 0 0 12px; }
+      label { display: block; margin: 10px 0 3px; font-weight: 600; }
+      input[type="text"], input[type="url"], input[type="password"] {
+        width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #ccd0d5; border-radius: 6px;
+      }
+      .row { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+      .row input { margin: 0; }
+      button { width: 100%; margin-top: 12px; padding: 8px; border: 0; border-radius: 6px; background: #1877f2; color: #fff; font-weight: 600; cursor: pointer; }
+      button:hover { background: #166fe5; }
+      .status { margin-top: 10px; font-size: 12px; color: #65676b; }
+      .err { color: #d13b3b; }
+      .hint { font-size: 11px; color: #8a8d91; margin-top: 2px; }
+      .crawl { margin: 12px 0; padding: 10px; background: #f0f2f5; border-radius: 8px; }
+      button:disabled { opacity: 0.5; cursor: default; }
+    </style>
+  </head>
+  <body>
+    <h1>FB Group Monitor</h1>
+
+    <div class="row">
+      <input type="checkbox" id="enabled" />
+      <label for="enabled" style="margin:0">Monitoring on</label>
+    </div>
+
+    <div class="crawl">
+      <label style="margin-top:0">Crawl (scroll &amp; parse until limit)</label>
+      <div class="row" style="margin:4px 0">
+        <input type="number" id="crawlLimit" min="1" value="100" style="width:80px" />
+        <button id="startCrawl" style="width:auto;margin:0;flex:1">Start crawl</button>
+        <button id="stopCrawl" style="width:auto;margin:0;flex:1;background:#65676b">Stop</button>
+      </div>
+      <div class="hint" id="crawlProgress">Idle.</div>
+    </div>
+
+    <div class="crawl">
+      <div class="row" style="margin:0 0 6px">
+        <input type="checkbox" id="monitorEnabled" />
+        <label for="monitorEnabled" style="margin:0">24/7 monitor</label>
+        <input type="number" id="monitorInterval" min="5" value="30" title="minutes" style="width:56px;margin-left:auto" />
+        <span class="hint" style="margin:0">min</span>
+      </div>
+      <div class="row" style="margin:0 0 6px">
+        <label for="monitorCap" style="margin:0">Posts per run</label>
+        <input type="number" id="monitorCap" min="1" value="20" title="max new posts on an ongoing (warm) run" style="width:56px;margin-left:auto" />
+      </div>
+      <div class="row" style="margin:0 0 6px">
+        <label for="monitorColdCap" style="margin:0">Cold-start posts</label>
+        <input type="number" id="monitorColdCap" min="1" value="40" title="how many posts to fetch on the FIRST run of a new group" style="width:56px;margin-left:auto" />
+      </div>
+      <label style="margin-top:2px">Group URLs (one per line)</label>
+      <textarea id="monitorGroups" rows="4" placeholder="https://www.facebook.com/groups/123.../&#10;https://www.facebook.com/groups/456.../" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #ccd0d5;border-radius:6px;font-size:11px"></textarea>
+      <div class="hint" id="monitorStatus" style="margin-top:4px">Off.</div>
+      <div class="row" style="margin:6px 0 0;gap:6px">
+        <button id="monitorTest" style="width:auto;margin:0;padding:6px 12px;flex:1">Run now</button>
+        <button id="monitorStop" style="width:auto;margin:0;padding:6px 12px;background:#65676b;flex:1" title="Abort the cycle that's running right now.">Stop now</button>
+      </div>
+      <div class="row" style="margin:6px 0 0">
+        <button id="resetSeen" style="width:100%;margin:0;padding:6px 12px;background:#65676b" title="Forget which posts were seen so the next run re-scans from the top. Does not delete any captured data.">Reset seen</button>
+      </div>
+      <div class="hint" id="resetSeenStatus" style="margin-top:4px"></div>
+    </div>
+
+    <label for="groupFilter">Group id / slug</label>
+    <input type="text" id="groupFilter" placeholder="e.g. 123456789 or my-group-slug" />
+    <div class="hint">Only forward posts when the URL contains this. Leave blank for any group.</div>
+
+    <label for="endpoint">Server endpoint</label>
+    <input type="url" id="endpoint" placeholder="http://localhost:8787/ingest" />
+
+    <label for="apiKey">API key (optional)</label>
+    <input type="password" id="apiKey" placeholder="shared secret" />
+
+    <button id="save">Save</button>
+
+    <div class="status" id="status"></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

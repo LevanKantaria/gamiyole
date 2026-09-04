@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "FB Group Monitor",
+  "version": "0.1.0",
+  "description": "Reads posts from a Facebook group you admin and forwards them to your own server.",
+  "permissions": ["storage", "alarms", "scripting", "activeTab", "tabs"],
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FB Group Monitor",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/groups/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

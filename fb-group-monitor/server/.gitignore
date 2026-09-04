@@ -1,0 +1,9 @@
+# Firebase Admin service account key — NEVER commit this (full DB write access)
+serviceAccount.json
+
+# Local SQLite DB, backups + WAL sidecar files (hold scraped phone numbers)
+rides*.db
+rides*.db-wal
+rides*.db-shm
+
+node_modules/
