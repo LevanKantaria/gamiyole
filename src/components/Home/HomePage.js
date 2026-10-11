@@ -133,16 +133,21 @@ const HomePage = () => {
             <h2>{t("appPromoTitle")}</h2>
             <p>{t("appPromoText")}</p>
             <div className={classes.storeBadges}>
-              {/* Placeholders — swap for real store links once the apps ship. */}
-              <span className={classes.storeBadge} aria-disabled="true">
+              <a
+                className={`${classes.storeBadge} ${classes.storeBadgeLink}`}
+                href="https://apps.apple.com/app/id6787657842"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${t("downloadOn")} App Store`}
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                 </svg>
                 <span>
-                  <small>{t("comingSoon")}</small>
+                  <small>{t("downloadOn")}</small>
                   App Store
                 </span>
-              </span>
+              </a>
               <span className={classes.storeBadge} aria-disabled="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.6 1.8c-.3.3-.5.8-.5 1.4v17.6c0 .6.2 1.1.5 1.4l.1.1 9.9-9.9v-.2L3.7 1.7l-.1.1zm13.2 13.3-3.3-3.3v-.2l3.3-3.3.1 0 3.9 2.2c1.1.6 1.1 1.7 0 2.3l-3.9 2.2-.1.1zm-.1.1-3.4-3.4-9.9 9.9c.4.4 1 .4 1.7 0l11.6-6.5zM3.4 1.6l9.9 9.9 3.4-3.4L5.1 1.6c-.7-.4-1.3-.4-1.7 0z" />

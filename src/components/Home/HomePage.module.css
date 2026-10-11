@@ -201,6 +201,17 @@
   opacity: 0.9;
 }
 
+.storeBadgeLink {
+  cursor: pointer;
+  opacity: 1;
+  text-decoration: none;
+}
+
+.storeBadgeLink:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+
 .storeBadge span {
   display: flex;
   flex-direction: column;

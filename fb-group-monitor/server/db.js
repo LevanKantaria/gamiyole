@@ -4,7 +4,7 @@
 
 const Database = require("better-sqlite3");
 const path = require("path");
-const { enrich } = require("./parse");
+const { enrich, extractDeparture } = require("./parse");
 
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, "rides.db");
 const db = new Database(DB_FILE);
@@ -66,6 +66,7 @@ addCol("route_inherited", "INTEGER DEFAULT 0");     // 1 = direction taken from 
 addCol("departure_inherited", "INTEGER DEFAULT 0"); // 1 = departure taken from parent post
 addCol("date_source", "TEXT");    // 'absolute' (dated in text) | 'relative' (today/tomorrow) | null
 addCol("captured_via", "TEXT");   // 'monitor' | 'crawl' | 'live' — how the extension saw it
+addCol("posted_at", "TEXT");      // when the post was written (from FB's page data), if known
 
 db.exec(`CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id);`);
 
@@ -73,11 +74,11 @@ const upsertPostStmt = db.prepare(`
   INSERT INTO posts (post_id, group_id, kind, parent_id, author_name, author_user_id, author_url,
                      text, user_type, route_from, route_to, seats,
                      departure_date, departure_time, departure_at, departure_text, date_source,
-                     permalink, date, captured_at, captured_via, raw)
+                     permalink, date, captured_at, captured_via, posted_at, raw)
   VALUES (@post_id, @group_id, @kind, @parent_id, @author_name, @author_user_id, @author_url,
           @text, @user_type, @route_from, @route_to, @seats,
           @departure_date, @departure_time, @departure_at, @departure_text, @date_source,
-          @permalink, @date, @captured_at, @captured_via, @raw)
+          @permalink, @date, @captured_at, @captured_via, @posted_at, @raw)
   ON CONFLICT(post_id) DO UPDATE SET
     kind=excluded.kind, parent_id=excluded.parent_id,
     author_name=excluded.author_name, author_user_id=excluded.author_user_id,
@@ -87,6 +88,7 @@ const upsertPostStmt = db.prepare(`
     departure_at=excluded.departure_at, departure_text=excluded.departure_text,
     date_source=excluded.date_source,
     permalink=excluded.permalink, date=excluded.date, raw=excluded.raw,
+    posted_at=COALESCE(excluded.posted_at, posts.posted_at),
     -- once the live monitor has genuinely seen a post, keep it trusted forever;
     -- otherwise record however it was last seen (crawl/live).
     captured_via=CASE WHEN posts.captured_via='monitor' OR excluded.captured_via='monitor'
@@ -95,7 +97,11 @@ const upsertPostStmt = db.prepare(`
 
 const delPhonesStmt = db.prepare(`DELETE FROM phones WHERE post_id = ?`);
 const insPhoneStmt = db.prepare(`INSERT OR IGNORE INTO phones (post_id, phone) VALUES (?, ?)`);
-const existsStmt = db.prepare(`SELECT 1 FROM posts WHERE post_id = ?`);
+const existsStmt = db.prepare(`SELECT captured_at, posted_at FROM posts WHERE post_id = ?`);
+// A post first stored under a stand-in hash id (no real id was visible then),
+// now seen with its real one: drop the stand-in row and repoint its comments.
+const delPostStmt = db.prepare(`DELETE FROM posts WHERE post_id = ?`);
+const repointCommentsStmt = db.prepare(`UPDATE posts SET parent_id = @to WHERE parent_id = @from`);
 
 const upsertProfileStmt = db.prepare(`
   INSERT INTO profiles (user_id, name, url, post_count, first_seen, last_seen)
@@ -108,7 +114,29 @@ const upsertProfileStmt = db.prepare(`
 
 // Insert or update one enriched post. Returns true if it was new.
 const upsertPost = db.transaction((p) => {
-  const isNew = !existsStmt.get(p.postId);
+  // Seen before under its stand-in id? Then it's the same post, not a new one.
+  const alias = p.aliasId && p.aliasId !== p.postId && existsStmt.get(p.aliasId) ? p.aliasId : null;
+  const previous = existsStmt.get(p.postId) || (alias ? existsStmt.get(alias) : null);
+  if (previous && (p.kind || "post") === "post") {
+    // Re-seeing "გავდივარ" or "ხვალ" must not move the ride to a later date.
+    // Prefer an actual publication timestamp; otherwise retain the first sighting.
+    const capturedAt = previous.captured_at || p.capturedAt;
+    const postedAt = p.postedAt || previous.posted_at || null;
+    const dep = extractDeparture(p.text, postedAt || capturedAt);
+    p = { ...p, capturedAt, postedAt,
+      departureDate: dep.departureDate || null,
+      departureTime: dep.departureTime || null,
+      departureAt: dep.departureAt || null,
+      departureText: dep.departureText || null,
+      dateSource: dep.dateSource || null,
+    };
+  }
+  if (alias) {
+    delPhonesStmt.run(alias);
+    delPostStmt.run(alias);
+    repointCommentsStmt.run({ from: alias, to: p.postId });
+  }
+  const isNew = !alias && !existsStmt.get(p.postId);
   upsertPostStmt.run({
     post_id: p.postId,
     group_id: p.groupId || null,
@@ -131,6 +159,7 @@ const upsertPost = db.transaction((p) => {
     date: p.date || null,
     captured_at: p.capturedAt || null,
     captured_via: p.via || null,
+    posted_at: p.postedAt || null,
     raw: JSON.stringify(p),
   });
 
@@ -220,7 +249,7 @@ function inheritCommentContext() {
 // Only rule-enriched, non-inherited rows; only WRITES a route when one is found,
 // so it can add/upgrade routes but never wipes an existing or Claude-set value.
 const allRulesRowsStmt = db.prepare(
-  `SELECT post_id, text, captured_at,
+  `SELECT post_id, text, captured_at, captured_via, posted_at,
           COALESCE(route_inherited,0) AS route_inherited,
           COALESCE(departure_inherited,0) AS departure_inherited
    FROM posts WHERE enriched_by = 'rules'`
@@ -233,7 +262,7 @@ const updateTypeStmt = db.prepare(
 );
 const updateDepartureStmt = db.prepare(
   `UPDATE posts SET departure_date = @departure_date, departure_time = @departure_time,
-     departure_at = @departure_at, date_source = @date_source
+     departure_at = @departure_at, departure_text = @departure_text, date_source = @date_source
    WHERE post_id = @post_id`
 );
 
@@ -246,27 +275,32 @@ const resetInheritedRouteStmt = db.prepare(
 // rows, only when found (never wipes). Types: only UPGRADE — apply a new driver/
 // passenger label, but never downgrade an existing label back to unknown (so
 // paste-imported/assumed drivers keep their type when their text is just a number).
+// Exception: live-monitor rows were only ever set by these same rules (nothing
+// assumed or imported), so they're recomputed outright — a fixed parse can also
+// clear a wrong route/type/date left by an older rule.
 const reenrichRoutes = db.transaction(() => {
   let routes = 0, types = 0, dates = 0;
   for (const r of allRulesRowsStmt.all()) {
-    const e = enrich({ text: r.text, capturedAt: r.captured_at });
-    if (!r.route_inherited && (e.routeFrom || e.routeTo)) {
+    const e = enrich({ text: r.text, capturedAt: r.captured_at, postedAt: r.posted_at });
+    const live = r.captured_via === "monitor";
+    if (!r.route_inherited && (live || e.routeFrom || e.routeTo)) {
       updateRouteStmt.run({ post_id: r.post_id, route_from: e.routeFrom, route_to: e.routeTo });
       routes++;
     }
-    if (e.userType !== "unknown") {
+    if (live || e.userType !== "unknown") {
       updateTypeStmt.run({ post_id: r.post_id, user_type: e.userType });
       types++;
     }
     // Recompute departure (now understands explicit dates) on non-inherited rows,
     // only when a date is found — corrects "ხვალ 30 ივნისს" to the real date and
     // stamps date_source, never wiping an existing value.
-    if (!r.departure_inherited && e.departureDate) {
+    if (!r.departure_inherited && (live || e.departureDate)) {
       updateDepartureStmt.run({
         post_id: r.post_id,
         departure_date: e.departureDate,
         departure_time: e.departureTime || null,
         departure_at: e.departureAt || null,
+        departure_text: e.departureText || null,
         date_source: e.dateSource || null,
       });
       dates++;
@@ -344,13 +378,29 @@ const missingDepartureCountStmt = db.prepare(
 // permalink to link back to. City validity + future-date checks happen in JS.
 const promotableStmt = db.prepare(`
   SELECT post_id, group_id, route_from, route_to, seats,
-         departure_date, departure_time, departure_at, permalink, captured_at, text
+         departure_date, departure_time, departure_at, permalink, captured_at, posted_at, text
   FROM posts
   WHERE kind = 'post'
     AND user_type = 'driver'
     AND route_from IS NOT NULL AND route_to IS NOT NULL
     AND route_from <> route_to
-    AND departure_date IS NOT NULL AND departure_date >= @today
+    AND (departure_date >= @from OR (departure_date IS NULL AND captured_at >= @since))
+    AND (permalink IS NOT NULL OR group_id IS NOT NULL)
+    AND captured_via = 'monitor'
+  ORDER BY departure_date ASC
+  LIMIT @limit`);
+
+// Passenger posts follow the same freshness and route gates as driver offers.
+// Comments are excluded because a reply can inherit another person's route.
+const promotableRequestsStmt = db.prepare(`
+  SELECT post_id, group_id, route_from, route_to, seats,
+         departure_date, departure_time, departure_at, permalink, captured_at, posted_at, text
+  FROM posts
+  WHERE kind = 'post'
+    AND user_type = 'passenger'
+    AND route_from IS NOT NULL AND route_to IS NOT NULL
+    AND route_from <> route_to
+    AND (departure_date >= @from OR (departure_date IS NULL AND captured_at >= @since))
     AND (permalink IS NOT NULL OR group_id IS NOT NULL)
     AND captured_via = 'monitor'
   ORDER BY departure_date ASC
@@ -364,7 +414,7 @@ const promotableStmt = db.prepare(`
 // is deliberately NOT surfaced here — a fresh setup shows ~0 and grows with runs.
 const promoteCandidatesStmt = db.prepare(`
   SELECT post_id, group_id, route_from, route_to, seats, departure_date, departure_time,
-         date_source, captured_via, permalink, captured_at, text
+         date_source, captured_via, permalink, captured_at, posted_at, text
   FROM posts
   WHERE kind = 'post' AND user_type = 'driver' AND captured_via = 'monitor'
     AND route_from IS NOT NULL AND route_to IS NOT NULL
@@ -382,7 +432,12 @@ const queries = {
   // live monitor saw the post fresh (captured_via='monitor', ≈ written time). A
   // bulk backfill's relative-dated posts (today/tomorrow stamped at crawl time)
   // are exactly what this excludes.
-  listPromotable: (today, limit = 500) => promotableStmt.all({ today, limit }),
+  // Rides dated from `from` (YYYY-MM-DD) on, plus undated posts captured since
+  // that day began in Tbilisi (promote.js dates those by the day they were seen).
+  listPromotable: (from, limit = 500) =>
+    promotableStmt.all({ from, since: new Date(`${from}T00:00:00+04:00`).toISOString(), limit }),
+  listPromotableRequests: (from, limit = 500) =>
+    promotableRequestsStmt.all({ from, since: new Date(`${from}T00:00:00+04:00`).toISOString(), limit }),
   promoteCandidates: (limit = 300) => promoteCandidatesStmt.all({ limit }),
   promoteCandidatesCount: () => promoteCandidatesCountStmt.get().n,
   listPosts: (limit = 200, type) =>

@@ -19,12 +19,48 @@ const API_KEY = process.env.API_KEY || "";
 // When set, every ingest that brings in new posts also pushes qualifying driver
 // rides to the gamiyole website (needs Firebase credentials — see promote.js).
 const AUTO_PROMOTE = process.env.AUTO_PROMOTE === "1";
+// With AUTO_PROMOTE on, also re-promote on a timer — picks up rides Claude
+// enriched via mcp.js (no ingest involved) and expires past-dated listings.
+const PROMOTE_INTERVAL_MIN = Number(process.env.PROMOTE_INTERVAL_MIN) || 15;
+const PROMOTE_LOG = path.join(__dirname, "promote.log");
+
+// Single promote runner: calls from ingest, crawl-done, the timer and startup
+// can overlap, so never run two passes at once — a request that arrives while
+// one is running queues exactly one follow-up pass (which sees the newer DB).
+let promoteRunning = null;
+let promotePending = false;
+let lastPromote = null;
+function runPromote(reason) {
+  if (promoteRunning) { promotePending = true; return promoteRunning; }
+  promoteRunning = promoteRides()
+    .then((s) => {
+      lastPromote = { at: new Date().toISOString(), reason, ok: true, ...s };
+      logPromote(`${reason}: rides ${s.qualified}/${s.candidates} qualified, ${s.written} posted, ${s.removed} stale removed; requests ${s.requestsQualified}/${s.requestCandidates} qualified, ${s.requestsWritten} posted, ${s.requestsRemoved} stale removed`);
+      return s;
+    })
+    .catch((e) => {
+      lastPromote = { at: new Date().toISOString(), reason, ok: false, error: e.message };
+      logPromote(`${reason}: FAILED ${e.message}`);
+      throw e;
+    })
+    .finally(() => {
+      promoteRunning = null;
+      if (promotePending) { promotePending = false; runPromote(`${reason}+queued`).catch(() => {}); }
+    });
+  return promoteRunning;
+}
+// Console window scrolls away / closes on reboot — keep a file you can check.
+function logPromote(line) {
+  const stamped = `[${new Date().toISOString()}] promote ${line}`;
+  console.log(stamped);
+  fs.appendFile(PROMOTE_LOG, stamped + "\n", () => {});
+}
 
 function readableDate(p) {
   if (p.timeText && p.timeText.trim()) return p.timeText.trim();
-  if (p.capturedAt) {
-    const d = new Date(p.capturedAt);
-    if (!isNaN(d)) return d.toLocaleString();
+  for (const t of [p.postedAt, p.capturedAt]) { // when written if known, else when seen
+    const d = t ? new Date(t) : null;
+    if (d && !isNaN(d)) return d.toLocaleString();
   }
   return "unknown";
 }
@@ -66,14 +102,16 @@ function renderCandidates(d, refreshSecs = 0) {
   const rows = d.items
     .map((it) => {
       const badge = it.verdict === "qualified"
-        ? `<span class="ok">✓ qualified</span>`
+        ? `<span class="ok">✓ ${esc(it.reason)}</span>`
         : `<span class="no">✗ ${esc(it.reason)}</span>`;
       const link = it.link
         ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">post↗</a>` : "—";
       const cap = (it.captured || "").slice(5, 16).replace("T", " "); // MM-DD HH:MM
+      // "Ureki (Batumi)" when a place is grouped under the site's nearest city
+      const place = (p, site) => esc(p) + (site && site !== p ? ` <small style="color:#65676b">(${esc(site)})</small>` : "");
       return `<tr class="${it.verdict}">
         <td>${badge}</td>
-        <td>${esc(it.from)} → ${esc(it.to)}</td>
+        <td>${place(it.from, it.siteFrom)} → ${place(it.to, it.siteTo)}</td>
         <td>${esc(it.date) || "—"} ${esc(it.time) || ""}</td>
         <td>${esc(it.dateSource) || "—"}</td>
         <td>${esc(it.via) || "—"}</td>
@@ -148,11 +186,7 @@ const server = http.createServer(async (req, res) => {
       console.log(`ingest: received ${posts.length}, new ${added}`);
       // Optionally surface any new qualifying rides on the website right away.
       // Never let a promote failure break ingest — it's a best-effort side task.
-      if (AUTO_PROMOTE && added > 0) {
-        promoteRides()
-          .then((s) => console.log(`  ↳ promoted ${s.written} to website, removed ${s.removed} stale`))
-          .catch((e) => console.warn(`  ↳ auto-promote skipped: ${e.message}`));
-      }
+      if (AUTO_PROMOTE && added > 0) runPromote("ingest").catch(() => {});
       return json(res, 200, { ok: true, received: posts.length, added, inherited: inh });
     } catch (e) {
       res.writeHead(400); return res.end("bad request: " + e.message);
@@ -222,13 +256,25 @@ const server = http.createServer(async (req, res) => {
         console.log(`promote/clear: removed ${s.removed} external listings`);
         return json(res, 200, { ok: true, cleared: s.removed });
       }
-      const dryRun = url.searchParams.get("dry") === "1";
-      const s = await promoteRides({ dryRun });
-      console.log(`promote: ${s.qualified}/${s.candidates} qualified, ${s.written} posted, ${s.removed} stale removed`);
+      // ?reason=crawl — sent by the extension when a monitor cycle finishes.
+      // Honors AUTO_PROMOTE so turning it off really means "promote by hand".
+      const reason = url.searchParams.get("reason");
+      if (reason === "crawl" && !AUTO_PROMOTE) {
+        return json(res, 200, { ok: true, skipped: "AUTO_PROMOTE is off" });
+      }
+      if (url.searchParams.get("dry") === "1") {
+        const s = await promoteRides({ dryRun: true });
+        console.log(`promote (dry): ${s.qualified}/${s.candidates} qualified`);
+        return json(res, 200, { ok: true, ...s });
+      }
+      const s = await runPromote(reason === "crawl" ? "crawl-done" : "manual");
       return json(res, 200, { ok: true, ...s });
     } catch (e) {
       return json(res, 500, { ok: false, error: e.message });
     }
+  }
+  if (req.method === "GET" && url.pathname === "/promote/status") {
+    return json(res, 200, { autoPromote: AUTO_PROMOTE, intervalMin: PROMOTE_INTERVAL_MIN, running: !!promoteRunning, last: lastPromote });
   }
   // Promotion inspector: every driver-route post with a qualify/reject verdict
   // + reason. `.html` renders a table; otherwise JSON. Read-only (no Firebase).
@@ -271,13 +317,13 @@ server.listen(PORT, () => {
   console.log(`  GET  /stats                  totals, type split, top routes`);
   console.log(`  POST /promote[?dry=1]        push good driver rides → gamiyole website`);
   console.log(`  GET  /promote/candidates.html  inspector: every candidate + why it did/didn't qualify`);
+  console.log(`  GET  /promote/status         last auto-promote result (also logged to promote.log)`);
   if (AUTO_PROMOTE) {
-    console.log("  auto-promote: ON (on startup + after every ingest that adds posts)");
+    console.log(`  auto-promote: ON (startup, new posts, end of every crawl, every ${PROMOTE_INTERVAL_MIN} min)`);
     // Publish whatever already qualifies right now, so booting the service
     // reflects the current DB instead of waiting for the next crawl.
-    promoteRides()
-      .then((s) => console.log(`startup promote: ${s.qualified}/${s.candidates} qualified, ${s.written} posted, ${s.removed} stale removed`))
-      .catch((e) => console.warn(`startup promote skipped: ${e.message}`));
+    runPromote("startup").catch(() => {});
+    setInterval(() => runPromote("timer").catch(() => {}), PROMOTE_INTERVAL_MIN * 60000);
   }
   if (!API_KEY) console.log("  auth: OFF (set API_KEY to require X-Api-Key)");
 });

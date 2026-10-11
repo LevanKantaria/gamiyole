@@ -339,6 +339,7 @@ const EN = {
     cancelled: 'Cancelled',
     bus: 'Bus',
     externalBadge: 'From Facebook',
+    externalRequestNote: 'Spotted in a Facebook group — we could not verify it. Open the original post to contact the passenger.',
     externalSeats: '{n} seats mentioned',
     externalNote:
       "Spotted in a Facebook group — we couldn't verify it. Open the original post to check details and contact the driver.",
@@ -714,6 +715,7 @@ const GE = {
     cancelled: 'გაუქმებული',
     bus: 'ავტობუსი',
     externalBadge: 'ფეისბუქიდან',
+    externalRequestNote: 'ნაპოვნია ფეისბუქის ჯგუფში — ვერ გადავამოწმეთ. გახსენი ორიგინალი პოსტი მგზავრთან დასაკავშირებლად.',
     externalSeats: '{n} მითითებული ადგილი',
     externalNote:
       'ნაპოვნია ფეისბუქის ჯგუფში — ვერ გადავამოწმეთ. გახსენი ორიგინალი პოსტი დეტალების სანახავად და მძღოლთან დასაკავშირებლად.',

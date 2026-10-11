@@ -10,4 +10,7 @@ rides*.db-shm
 # Ignore the whole directory, not just *.db, so nothing in it can slip out.
 bundle/
 
+# Auto-promote run history (index.js)
+promote.log
+
 node_modules/

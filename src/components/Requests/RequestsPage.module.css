@@ -75,6 +75,23 @@
   flex-shrink: 0;
 }
 
+.search {
+  margin-bottom: 26px;
+}
+
+.clearFilters {
+  display: block;
+  margin: 10px 0 0 auto;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  color: var(--brand);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .listHead {
   display: flex;
   align-items: center;
@@ -110,6 +127,10 @@
   color: var(--muted);
   font-size: 14px;
   margin: 0;
+}
+
+.empty button {
+  margin-top: 16px;
 }
 
 .gate {

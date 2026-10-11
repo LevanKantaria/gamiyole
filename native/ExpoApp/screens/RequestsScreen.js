@@ -21,9 +21,10 @@ import EmptyState from '../components/ui/EmptyState';
 import ListOptions from '../components/ListOptions';
 import CalendarModal from '../components/CalendarModal';
 import RequestCard from '../components/RequestCard';
+import ExternalRequestCard from '../components/ExternalRequestCard';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
-import { subscribeRequests, createRequest } from '../services/requests';
+import { subscribeRequests, subscribeExternalRequests, createRequest } from '../services/requests';
 import { todayISO } from '../services/rides';
 import { colors, spacing, radius } from '../theme';
 
@@ -31,9 +32,17 @@ const RequestsScreen = ({ navigation, route }) => {
   const { t } = useLocale();
   const { user, profile } = useAuth();
   const [requests, setRequests] = useState(null);
+  const [externalRequests, setExternalRequests] = useState(null);
   const [formOpen, setFormOpen] = useState(!!route.params?.openForm);
 
   useEffect(() => subscribeRequests(setRequests), []);
+  useEffect(() => subscribeExternalRequests(setExternalRequests), []);
+
+  const allRequests = requests && externalRequests
+    ? [...requests, ...externalRequests].sort((a, b) =>
+        (a.dateFrom || '').localeCompare(b.dateFrom || '') ||
+        (a.createdAt || '').localeCompare(b.createdAt || ''))
+    : null;
 
   // Reachable both as a tab and via navigate('Requests', { openForm }) from the
   // Find empty-state CTA — open the form when asked, then clear the param so a
@@ -70,9 +79,9 @@ const RequestsScreen = ({ navigation, route }) => {
             ))}
           </View>
 
-          {requests === null ? (
+          {allRequests === null ? (
             <Loading text={t('common.loading')} />
-          ) : requests.length === 0 ? (
+          ) : allRequests.length === 0 ? (
             <EmptyState
               icon="person-search"
               title={t('requests.empty')}
@@ -81,7 +90,9 @@ const RequestsScreen = ({ navigation, route }) => {
           ) : (
             <>
               <Text style={styles.sectionLabel}>{t('requests.recent')}</Text>
-              {requests.map((item) => (
+              {allRequests.map((item) => item.source === 'facebook' ? (
+                <ExternalRequestCard key={`fb-${item.id}`} request={item} />
+              ) : (
                 <RequestCard
                   key={item.id}
                   request={item}

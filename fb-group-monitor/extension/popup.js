@@ -4,6 +4,7 @@ const ALL_KEYS = [
   ...FIELDS, "lastFlush", "lastError", "outbox", "crawlProgress",
   "monitorEnabled", "monitorInterval", "monitorCap", "monitorColdCap", "monitorGroups",
   "monitorLastCycle", "monitorLastResults", "monitorLoggedOut", "monitorCycle", "monitorError",
+  "monitorLastPromote",
 ];
 
 // Fill the form inputs from storage. Called ONLY when the popup opens.
@@ -88,6 +89,13 @@ function renderMonitor(cfg) {
     : `Off · ${n} groups configured`;
   if (results.length) msg += ` · last ${last} (${got} new)`;
   if (cyc && cyc.status === "interrupted") msg += " · last cycle was interrupted";
+  const pr = cfg.monitorLastPromote;
+  if (pr) {
+    msg += !pr.ok ? ` · ⚠ website post failed: ${pr.error}`
+      : pr.skipped ? " · website: auto-promote off"
+      : ` · website: ${pr.written} live, ${pr.removed} expired`;
+    if (!pr.ok) el.className = "hint err";
+  }
 
   if (bad.length) {
     // Name what actually went wrong instead of silently reporting "0 new".

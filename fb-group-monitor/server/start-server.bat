@@ -8,7 +8,9 @@ title FB Group Monitor server
 cd /d "%~dp0"
 
 REM Publish qualifying driver rides to the gamiyole website automatically:
-REM once at startup, then after any ingest that adds posts. Needs Firebase
+REM at startup, after any ingest that adds posts, at the end of every monitor
+REM crawl, and every PROMOTE_INTERVAL_MIN minutes. Results go to promote.log
+REM and GET /promote/status. Needs Firebase
 REM credentials (serviceAccount.json in this folder) or it logs a skip and
 REM carries on. Set to 0 if you'd rather promote by hand.
 set AUTO_PROMOTE=1

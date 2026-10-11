@@ -1,0 +1,9 @@
+.card { border: 1px dashed var(--line); border-left: 4px solid #1877f2; padding: 20px 24px; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; font-size: 17px; }
+.badge { flex-shrink: 0; color: #1877f2; background: #eaf2ff; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 800; }
+.date { color: var(--muted); font-size: 13px; margin-top: 9px; }
+.postText { margin: 15px 0; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.bottom p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.bottom a { flex-shrink: 0; }
+@media (max-width: 620px) { .top, .bottom { flex-direction: column; align-items: flex-start; } }

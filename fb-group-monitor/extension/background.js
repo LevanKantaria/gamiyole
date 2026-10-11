@@ -223,6 +223,37 @@ async function setCycleState(patch) {
   await chrome.storage.local.set({ monitorCycle: { ...monitorCycle, ...patch, at: Date.now() } });
 }
 
+// POST /promote?reason=crawl on the same server as the ingest endpoint. The
+// server decides (AUTO_PROMOTE) whether to actually publish. Best-effort: a
+// failure is recorded for the popup but never fails the cycle.
+async function promoteAfterCycle() {
+  const cfg = await getConfig();
+  if (!cfg.endpoint) return;
+  let promoteUrl;
+  try {
+    promoteUrl = new URL("/promote?reason=crawl", cfg.endpoint).toString();
+  } catch { return; }
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60000);
+  let result;
+  try {
+    const res = await fetch(promoteUrl, {
+      method: "POST",
+      headers: cfg.apiKey ? { "X-Api-Key": cfg.apiKey } : {},
+      signal: ctrl.signal,
+    });
+    const body = await res.json().catch(() => ({}));
+    result = res.ok && body.ok !== false
+      ? { ok: true, skipped: body.skipped || null, written: body.written || 0, removed: body.removed || 0 }
+      : { ok: false, error: body.error || `HTTP ${res.status}` };
+  } catch (e) {
+    result = { ok: false, error: String((e && e.message) || e) };
+  } finally {
+    clearTimeout(timer);
+  }
+  await chrome.storage.local.set({ monitorLastPromote: { ...result, at: new Date().toISOString() } });
+}
+
 let cycleRunning = false;
 let abortCycle = false;
 
@@ -266,6 +297,8 @@ async function runMonitorCycle(manual = false) {
       await sleep(3000); // small gap between groups
     }
     await withLock(flushInner); // push anything still buffered
+    // Crawl done → have the server publish qualifying rides to the website.
+    if (!abortCycle && !loggedOut) await promoteAfterCycle();
   } catch (e) {
     await chrome.storage.local.set({ monitorError: String((e && e.message) || e) });
   } finally {

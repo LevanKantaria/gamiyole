@@ -59,6 +59,17 @@ node index.js        # or: API_KEY=yoursecret node index.js
 
 Data lives in `server/rides.db` (SQLite), keyed by post id so re-ingesting dedupes.
 
+### Facebook ride requests on Gamiyole
+
+The same monitor also publishes qualifying passenger posts to the Firebase
+`externalRequests` node. They appear on the signed-in Requests board in the web
+and Expo apps beside member-created requests. External cards show the route,
+date, a contact-redacted excerpt, and a link to the Facebook post; they do not
+create a Gamiyole profile or publish a scraped phone number. The publisher uses
+the same monitored-post, route, date and expiry gates as driver offers. Running
+`node promote.js --dry-run` prints both ride and request candidates without
+writing to Firebase. `node promote.js --clear` clears both external nodes.
+
 **Endpoints**
 
 - `POST /ingest` — the extension posts `{ "posts": [...] }`; each is enriched + stored.
@@ -95,6 +106,19 @@ Enrichment is **rule-based and offline** (`parse.js`) — no API keys, no cost. 
 driver/passenger + route rules are Georgian-specific; adjust the keyword and city
 lists there as you see real data. Posts the rules can't type are stored as
 `user_type='unknown'` and cleaned up on demand by Claude Desktop (below).
+
+Undated immediate departures (`გავდივარ`, `გავდივართ`, `მივდივარ`) resolve to
+the post's day in Asia/Tbilisi. Explicit calendar dates, tomorrow, and weekdays
+take priority. `შემდეგ` naming another stop does not make the departure a future
+day; vague dates such as `შემდეგ კვირას` or `თვის ბოლოს` remain unresolved.
+Transliterated durations such as `orsaatshi` and `1 saatshi` are added to the
+publication timestamp, or the first capture time if publication time is unknown.
+Re-seeing the same post keeps that original reference time.
+
+Run `node test/parse.test.js` and `node test/promote.test.js` for parser and
+promotion regression checks. The promotion test uses an in-memory database and
+never writes to Firebase. After updating a running server, restart it and send
+`POST /reenrich` to reparse stored rule-enriched posts with their original dates.
 
 ## Classifying the `unknown` posts with Claude Desktop
 
@@ -196,6 +220,13 @@ Facebook feed with a stubbed `chrome` API. It asserts:
 - `content.js` watches the page with a `MutationObserver`. For each `[role="article"]` it
   extracts a stable **post id** from the permalink (`/groups/<gid>/posts/<id>/`), plus author,
   text, and the relative timestamp. It dedupes per page-session and messages the background worker.
+- `page-hook.js` runs in the page's own JS world (`"world": "MAIN"`). Facebook only puts a
+  post's own link in the DOM once its timestamp is hovered, so most posts expose no id — but
+  the JSON embedded in the page and the `/api/graphql/` feed responses carry each post's
+  `post_id`, permalink and `creation_time`. The hook reads them (read-only) and hands them to
+  `content.js`, which matches them to DOM posts by the opening of the text. Posts then get a
+  real link, and "today/tomorrow" resolve against when the post was **written** (`posted_at`).
+  Check it on a group tab's DevTools console: `__fbgmHook.stats`.
 - `background.js` keeps a small persistent outbox in `chrome.storage` (survives the worker
   sleeping), POSTs batches to your endpoint, and retries every minute if the server was down.
 - The server dedupes again by post id, so restarting either side won't double-store.

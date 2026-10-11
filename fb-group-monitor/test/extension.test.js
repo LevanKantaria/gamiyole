@@ -15,17 +15,26 @@ const CONTENT = fs.readFileSync(
 );
 
 const GID = "657384847985376";
-const postHtml = (id, name, text) => `
+// link:false renders a post the way FB usually does: no link to the post itself
+// in the DOM (its timestamp only gets an href on hover).
+const postHtml = (id, name, text, link = true) => `
   <div class="post">
     <div><div data-ad-rendering-role="profile_name"><a href="/groups/${GID}/user/${id}/">${name}</a></div></div>
     <div data-ad-rendering-role="story_message"><div dir="auto">${text}</div></div>
-    <a href="/groups/${GID}/posts/${id}/">5h</a>
+    ${link ? `<a href="/groups/${GID}/posts/${id}/">5h</a>` : `<a href="#" role="link">5h</a>`}
     <div data-ad-rendering-role="like_button"></div>
   </div>`;
 
+// Same stand-in id content.js gives a post with no id anywhere.
+function hashId(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return "h" + (h >>> 0).toString(36);
+}
+
 function makeEnv({ enabled = false, seenIds = [], seededGroups = [], posts = [] } = {}) {
   const dom = new JSDOM(
-    `<body><div role="feed">${posts.map((p) => postHtml(p.id, p.name, p.text)).join("")}</div></body>`,
+    `<body><div role="feed">${posts.map((p) => postHtml(p.id, p.name, p.text, p.link !== false)).join("")}</div></body>`,
     // runScripts lets window.eval execute with the window as its global scope,
     // so content.js resolves MutationObserver/document/setTimeout from jsdom.
     { url: `https://www.facebook.com/groups/${GID}/`, runScripts: "outside-only" }
@@ -76,7 +85,7 @@ function makeEnv({ enabled = false, seenIds = [], seededGroups = [], posts = [] 
     window, store, sent, send,
     addPosts(list) {
       const feed = window.document.querySelector('[role="feed"]');
-      for (const p of list) feed.insertAdjacentHTML("beforeend", postHtml(p.id, p.name, p.text));
+      for (const p of list) feed.insertAdjacentHTML("beforeend", postHtml(p.id, p.name, p.text, p.link !== false));
       height += 500 * list.length;
     },
     setOnScroll(fn) { onScroll = fn; },
@@ -190,6 +199,57 @@ function check(name, pass, detail = "") {
     await sleep(50);
     const r2 = await empty.send({ type: "PING" });
     check("ready:false when no posts rendered", r2 && r2.ready === false, JSON.stringify(r2 && { ready: r2.ready }));
+  }
+
+  // What page-hook.js announces for a post it read from FB's page data.
+  const announce = (env, story) =>
+    env.window.document.dispatchEvent(new env.window.CustomEvent("fbgm:story", { detail: JSON.stringify(story) }));
+
+  // ---- TEST 6: link-less posts get their real id + time from the page data
+  console.log("\nTEST 6 — page data (page-hook.js) supplies ids for link-less posts");
+  {
+    const env = makeEnv({
+      posts: [{ id: "x", name: "A", text: "ხვალ გავდივარ თბილისიდან ბათუმში", link: false },
+              { id: "y", name: "B", text: "no page data for this one", link: false }],
+    });
+    await sleep(50);
+    const story = { key: "ხვალგავდივართბილისიდანბათუმში", postId: "3179000000000001", groupId: GID,
+      url: null, time: 1789999999, author: "A" };
+    announce(env, story);
+    await env.send({ type: "START_MONITOR", cap: 20, coldCap: 2 });
+    const a = env.sent.find((p) => p.author === "A");
+    const b = env.sent.find((p) => p.author === "B");
+    check("link-less post got its real id", a && a.postId === story.postId, a && a.postId);
+    check("…a real permalink", a && a.permalink === `https://www.facebook.com/groups/${GID}/posts/${story.postId}/`,
+      a && a.permalink);
+    check("…when it was written", a && a.postedAt === new Date(story.time * 1000).toISOString(), a && a.postedAt);
+    check("…and its old stand-in id as aliasId", a && a.aliasId === hashId("A|" + "ხვალ გავდივარ თბილისიდან ბათუმში"),
+      a && a.aliasId);
+    check("a post with no page data still gets a stand-in id", b && /^h[0-9a-z]+$/.test(b.postId) && !b.postedAt,
+      b && b.postId);
+  }
+
+  // ---- TEST 7: posts captured before the page data existed stay the boundary
+  console.log("\nTEST 7 — monitor boundary still recognises a post seen under its old stand-in id");
+  {
+    const env = makeEnv({
+      seededGroups: [GID],
+      seenIds: [hashId("Old|already captured")], // stored before this change: stand-in id
+      posts: [{ id: "7001", name: "A", text: "new one" }, { id: "7002", name: "B", text: "new two" }],
+    });
+    await sleep(50);
+    announce(env, { key: "alreadycaptured", postId: "3179000000000002", groupId: GID, time: 1789990000, author: "Old" });
+    let scrolled = false;
+    env.setOnScroll(() => {
+      if (scrolled) return;
+      scrolled = true;
+      env.addPosts([{ id: "z", name: "Old", text: "already captured", link: false }]);
+    });
+    const res = await env.send({ type: "START_MONITOR", cap: 20, coldCap: 40 });
+    check("stopped at the old post (reason ok, 2 captured)", res.reason === "ok" && res.captured === 2,
+      `reason=${res.reason} captured=${res.captured}`);
+    check("the old post was not re-sent under its new id",
+      !env.sent.some((p) => p.postId === "3179000000000002"), JSON.stringify(env.sent.map((p) => p.postId)));
   }
 
   const passed = results.filter(Boolean).length;

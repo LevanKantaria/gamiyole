@@ -23,6 +23,22 @@
   const ACTION_BAR_SEL =
     '[data-ad-rendering-role="comment_button"], [data-ad-rendering-role="like_button"], [data-ad-rendering-role="share_button"]';
 
+  // Post facts from the data FB loaded (see page-hook.js, which runs in the page's
+  // own JS world): FB only puts a post's own link in the DOM once its timestamp
+  // is hovered, but the hook reads each post's id and creation time from the
+  // page's JSON/GraphQL payloads, keyed by the opening of the post's text.
+  const STORIES = new Map(); // storyKey(text) → { postId, groupId, url, time, author }
+  const storyKey = (text) => String(text || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "").slice(0, 60);
+  document.addEventListener("fbgm:story", (e) => {
+    try {
+      const s = JSON.parse(e.detail);
+      if (!s || !s.key || !s.postId) return;
+      const cur = STORIES.get(s.key);
+      if (!cur || (s.time || 0) >= (cur.time || 0)) STORIES.set(s.key, s); // same text twice → newer post
+    } catch (err) { void err; }
+  });
+  document.dispatchEvent(new CustomEvent("fbgm:hello")); // replay what the hook saw before we loaded
+
   // Cheap stable hash → base36 string, for posts that expose no numeric id.
   function hashId(str) {
     let h = 5381;
@@ -89,14 +105,27 @@
         if (m) { pfbidGroup = m[1]; pfbid = m[2]; }
       }
     }
+    // No numeric id in the DOM → the page data usually has it (see STORIES).
+    const story = STORIES.get(storyKey(text));
+    if (!postId && story) {
+      postId = story.postId;
+      const gm = authorLink && (authorLink.getAttribute("href") || "").match(/\/groups\/([^/?]+)\//);
+      groupId = story.groupId || (gm && gm[1]) || currentGroupId();
+    }
     if (!postId && pfbid) { groupId = pfbidGroup; postId = pfbid; }
-    // Fallback identity for comment-less posts with no exposed id at all.
-    if (!postId) postId = hashId((author || "") + "|" + text.slice(0, 200));
+    // Fallback identity for posts with no id anywhere. Posts captured before the
+    // page data was available have this id, so it's also sent as aliasId to keep
+    // recognizing them (monitor boundary) and to merge them server-side.
+    const hashed = hashId((author || "") + "|" + text.slice(0, 200));
+    if (!postId) postId = hashed;
 
     const hasRealId = groupId && (/^\d+$/.test(postId) || /^pfbid/.test(postId));
     const permalink = hasRealId
       ? `https://www.facebook.com/groups/${groupId}/posts/${postId}/`
       : location.href;
+    // When the post was written (not when we saw it) — anchors "today/tomorrow".
+    const postedAt = story && story.postId === postId && story.time
+      ? new Date(story.time * 1000).toISOString() : null;
 
     // DIAGNOSTIC: when we couldn't find a post permalink, dump every link the
     // post actually exposed so the matcher can be extended. Look for "[FBGM]"
@@ -110,10 +139,11 @@
       } catch (e) { void e; }
     }
 
-    // The post timestamp is CSS-scrambled and not readably in the DOM, so we
-    // record the crawl time; the server renders a readable date from it.
+    // The post timestamp is CSS-scrambled and not readably in the DOM; postedAt
+    // comes from the page data when we have it, else the server uses capturedAt.
     return {
       postId,
+      aliasId: postId !== hashed ? hashed : null,
       groupId,
       permalink,
       author,
@@ -121,6 +151,7 @@
       authorUrl,
       text,
       timeText: null,
+      postedAt,
       capturedAt: new Date().toISOString(),
       url: location.href,
     };
@@ -250,12 +281,13 @@
 
       const post = extractPost(authorEl, container);
       if (post && post.postId) {
-        if (SEEN.has(post.postId)) {
+        if (SEEN.has(post.postId) || (post.aliasId && SEEN.has(post.aliasId))) {
           // Reached a post from a previous check — the new/old boundary.
           lastScanSawSeen = true;
           continue;
         }
         SEEN.add(post.postId);
+        if (post.aliasId) SEEN.add(post.aliasId);
         batch.push(post);
         newPosts++;
         // capture the commenters on this post too

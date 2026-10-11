@@ -16,6 +16,7 @@ import { todayISO } from './rides';
 // Stored flat in `requests` and readable by any signed-in member. Same model
 // and rules as the web app.
 const requestsRef = () => ref(db, 'requests');
+const externalRequestsRef = () => ref(db, 'externalRequests');
 const requestRef = (id) => ref(db, `requests/${id}`);
 
 const toArray = (snap) =>
@@ -49,4 +50,9 @@ export const subscribeRequests = (callback) => {
       ),
     () => callback([])
   );
+};
+
+export const subscribeExternalRequests = (callback) => {
+  const q = query(externalRequestsRef(), orderByChild('dateTo'), startAt(todayISO()));
+  return onValue(q, (snap) => callback(toArray(snap)), () => callback([]));
 };
