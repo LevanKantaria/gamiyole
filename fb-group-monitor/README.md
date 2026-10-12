@@ -58,6 +58,11 @@ node index.js        # or: API_KEY=yoursecret node index.js
 ```
 
 Data lives in `server/rides.db` (SQLite), keyed by post id so re-ingesting dedupes.
+Each project copy has its own database; run the server from the same copy each
+time. The local dashboard shows the active database path and publishing status.
+Automatic publishing is enabled by default when `server/serviceAccount.json`
+or `GOOGLE_APPLICATION_CREDENTIALS` is present, including with `node index.js`.
+Set `AUTO_PROMOTE=0` to keep captures local. Updated posts are republished too.
 
 ### Facebook ride requests on Gamiyole
 

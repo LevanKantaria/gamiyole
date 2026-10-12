@@ -34,6 +34,8 @@
 <header>
   <h1>🚗 Rideshare DB</h1>
   <div class="stats" id="stats"></div>
+  <div id="publishing" style="margin-top:8px"></div>
+  <div id="database" class="muted" style="font-size:12px"></div>
 </header>
 <div class="wrap">
   <div class="tabs" id="tabs">
@@ -77,7 +79,14 @@ function depart(r){
 function kindTag(k){ return k==='comment' ? ' <span class="pill unknown">💬 comment</span>' : ''; }
 
 async function loadStats(){
-  const s = await get('/stats');
+  const [s, publishing] = await Promise.all([get('/stats'), get('/promote/status')]);
+  const last = publishing.last;
+  $('#publishing').style.color = !publishing.autoPromote || last?.ok === false ? '#b91c1c' : '#15803d';
+  $('#publishing').textContent = publishing.autoPromote
+    ? last?.ok === false ? `Publishing failed: ${last.error}`
+      : `Automatic publishing ON${last?.ok ? ` · last pass: ${last.qualified} rides, ${last.requestsQualified || 0} requests` : ''}`
+    : `Automatic publishing OFF: ${publishing.mode || 'start server/start-server.bat to enable it'}`;
+  $('#database').textContent = publishing.dbFile ? `Database: ${publishing.dbFile}` : '';
   const t = s.totals || {};
   const top = (s.topRoutes||[]).slice(0,3).map(r=>`${r.route_from}→${r.route_to} (${r.n})`).join(', ') || '—';
   $('#stats').innerHTML =

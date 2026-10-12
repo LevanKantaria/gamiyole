@@ -16,9 +16,14 @@ const DASHBOARD = path.join(__dirname, "dashboard.html");
 
 const PORT = process.env.PORT || 8787;
 const API_KEY = process.env.API_KEY || "";
-// When set, every ingest that brings in new posts also pushes qualifying driver
-// rides to the gamiyole website (needs Firebase credentials — see promote.js).
-const AUTO_PROMOTE = process.env.AUTO_PROMOTE === "1";
+// A plain `node index` should publish when Firebase credentials are installed.
+// Explicit 0 still disables publishing; explicit 1 also exposes credential errors.
+const HAS_FIREBASE_CREDENTIALS = !!process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  fs.existsSync(path.join(__dirname, "serviceAccount.json"));
+const AUTO_PROMOTE = process.env.AUTO_PROMOTE === "1" ||
+  (process.env.AUTO_PROMOTE !== "0" && HAS_FIREBASE_CREDENTIALS);
+const PROMOTE_MODE = AUTO_PROMOTE ? "enabled" : process.env.AUTO_PROMOTE === "0"
+  ? "disabled by AUTO_PROMOTE=0" : "Firebase credentials missing";
 // With AUTO_PROMOTE on, also re-promote on a timer — picks up rides Claude
 // enriched via mcp.js (no ingest involved) and expires past-dated listings.
 const PROMOTE_INTERVAL_MIN = Number(process.env.PROMOTE_INTERVAL_MIN) || 15;
@@ -163,11 +168,12 @@ const server = http.createServer(async (req, res) => {
     }
     try {
       const { posts = [] } = JSON.parse((await readBody(req)) || "{}");
-      let added = 0;
+      let added = 0, processed = 0;
       for (const raw of posts) {
         if (!raw || !raw.postId) continue;
         const enriched = { ...enrich(raw), date: readableDate(raw) };
         const isNew = upsertPost(enriched);
+        processed++;
         if (isNew) {
           added++;
           const r = [enriched.routeFrom, enriched.routeTo].filter(Boolean).join("→") || "?";
@@ -186,8 +192,8 @@ const server = http.createServer(async (req, res) => {
       console.log(`ingest: received ${posts.length}, new ${added}`);
       // Optionally surface any new qualifying rides on the website right away.
       // Never let a promote failure break ingest — it's a best-effort side task.
-      if (AUTO_PROMOTE && added > 0) runPromote("ingest").catch(() => {});
-      return json(res, 200, { ok: true, received: posts.length, added, inherited: inh });
+      if (AUTO_PROMOTE && processed > 0) runPromote("ingest").catch(() => {});
+      return json(res, 200, { ok: true, received: posts.length, added, processed, inherited: inh });
     } catch (e) {
       res.writeHead(400); return res.end("bad request: " + e.message);
     }
@@ -274,7 +280,8 @@ const server = http.createServer(async (req, res) => {
     }
   }
   if (req.method === "GET" && url.pathname === "/promote/status") {
-    return json(res, 200, { autoPromote: AUTO_PROMOTE, intervalMin: PROMOTE_INTERVAL_MIN, running: !!promoteRunning, last: lastPromote });
+    return json(res, 200, { autoPromote: AUTO_PROMOTE, mode: PROMOTE_MODE, dbFile: DB_FILE,
+      intervalMin: PROMOTE_INTERVAL_MIN, running: !!promoteRunning, last: lastPromote });
   }
   // Promotion inspector: every driver-route post with a qualify/reject verdict
   // + reason. `.html` renders a table; otherwise JSON. Read-only (no Firebase).
@@ -324,6 +331,8 @@ server.listen(PORT, () => {
     // reflects the current DB instead of waiting for the next crawl.
     runPromote("startup").catch(() => {});
     setInterval(() => runPromote("timer").catch(() => {}), PROMOTE_INTERVAL_MIN * 60000);
+  } else {
+    console.log(`  auto-promote: OFF (${PROMOTE_MODE}) — captured posts will not publish automatically`);
   }
   if (!API_KEY) console.log("  auth: OFF (set API_KEY to require X-Api-Key)");
 });
