@@ -341,10 +341,12 @@ async function promoteRides({ dryRun = false, limit = 500 } = {}) {
   return summary;
 }
 
-// Explain, for one driver-route post, whether it would be promoted and why not.
+// Explain, for one driver post, whether it would be promoted and why not.
 // Mirrors the listPromotable gate + toListing filters, but returns a reason.
 // Without `today` it checks everything but the date window (used by toListing).
 function promoteVerdict(row, today) {
+  if (!row.route_from?.trim()) return { ok: false, reason: "missing origin" };
+  if (!row.route_to?.trim()) return { ok: false, reason: "missing destination" };
   const from = siteCity(row.route_from);
   const to = siteCity(row.route_to);
   if (!from || !to) return { ok: false, reason: "city not on gamiyole" };
@@ -358,7 +360,7 @@ function promoteVerdict(row, today) {
   return { ok: true, reason: eff.assumed ? "qualified (undated → day seen)" : "qualified" };
 }
 
-// Inspector: every driver-route post the crawler has, with a qualify/reject
+// Inspector: every monitored driver post, including incomplete routes, with a qualify/reject
 // verdict and reason. Pure DB read — works without Firebase credentials.
 function evaluateCandidates(limit = 300) {
   const today = todayTbilisi();
@@ -370,6 +372,7 @@ function evaluateCandidates(limit = 300) {
     if (v.ok) qualified += 1;
     else byReason[v.reason] = (byReason[v.reason] || 0) + 1;
     return {
+      postId: r.post_id,
       from: r.route_from,
       to: r.route_to,
       siteFrom: siteCity(r.route_from),
@@ -385,7 +388,7 @@ function evaluateCandidates(limit = 300) {
       text: (r.text || "").replace(/\s+/g, " ").slice(0, 140),
     };
   });
-  // total = ALL driver-route posts; shown = how many this page rendered (limit).
+  // total = ALL monitored driver posts; shown = how many this page rendered (limit).
   return { today, total: queries.promoteCandidatesCount(), shown: rows.length, qualified, byReason, items };
 }
 

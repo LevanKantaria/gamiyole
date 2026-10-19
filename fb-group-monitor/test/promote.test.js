@@ -42,6 +42,9 @@ async function main() {
   add("15", "ხვალ მივდივარ თბილისიდან ბათუმში");
   // A known publication timestamp arriving later corrects the reference day.
   add("15", "ხვალ მივდივარ თბილისიდან ბათუმში", { postedAt: "2026-10-10T12:00:00Z" });
+  add("16", "დღეს ღამე გვიან გავდივარ თბილისში");
+  add("17", "Hello , 21 ში გავდივარ თბილიდიდან დასავლეთის მიმართულებით გავიყოლებ 2 მგზავრს უსასყოდლოდ");
+  add("18", "დღეს გავდივარ თბილისიდან გაგიყოლებთ");
 
   assert.strictEqual(stored("10").departure_date, "2026-10-11", "tomorrow remains anchored to first capture");
   assert.strictEqual(stored("11").departure_date, "2026-10-10", "same-day post must not become new each day");
@@ -58,9 +61,15 @@ async function main() {
   assert.strictEqual(qualifies("ბათუმიდან გავდივარ ქუთაიში და შემდეგ თბილისში"), "qualified");
   assert.strictEqual(qualifies("შემდეგ კვირას გავდივარ ბათუმიდან თბილისში 5-ზე"), "rejected");
   assert.strictEqual(qualifies("momaval kviras gavdivar tbilisidan batumshi"), "rejected");
+  assert.strictEqual(candidates.find((x) => x.postId === '16').reason, 'missing origin',
+    'incomplete offers must appear in the inspector with a specific reason');
+  assert.strictEqual(candidates.find((x) => x.postId === '18').reason, 'missing destination');
+  const recovered = candidates.find((x) => x.postId === '17');
+  assert.deepStrictEqual([recovered.from, recovered.siteTo, recovered.date, recovered.verdict],
+    ['Tbilisi', 'Kutaisi', '2026-10-21', 'qualified']);
 
   const result = await promoteRides({ dryRun: true });
-  assert.strictEqual(result.qualified, 6, "current/tomorrow offers qualify; expired and vague future offers do not");
+  assert.strictEqual(result.qualified, 7, "current/tomorrow offers and recovered typos qualify; expired/vague/incomplete offers do not");
   assert.strictEqual(result.requestsQualified, 2, "recovered requests use the same promotion path");
   assert.strictEqual(result.written + result.requestsWritten, 0);
 

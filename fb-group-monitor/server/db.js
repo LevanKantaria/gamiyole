@@ -406,8 +406,8 @@ const promotableRequestsStmt = db.prepare(`
   ORDER BY departure_date ASC
   LIMIT @limit`);
 
-// Every driver ride-offer with a route — the universe of things that COULD be
-// promoted. The inspector (see promote.js evaluateCandidates) runs each through
+// Every monitored driver offer, including ones with an incomplete route.
+// The inspector (see promote.js evaluateCandidates) runs each through
 // the same gate as listPromotable and labels why it did/didn't qualify.
 // Candidates = only what the live monitor freshly captured (captured_via='monitor').
 // The big historical archive (bulk crawls / backfill) is a write-only record and
@@ -417,13 +417,11 @@ const promoteCandidatesStmt = db.prepare(`
          date_source, captured_via, permalink, captured_at, posted_at, text
   FROM posts
   WHERE kind = 'post' AND user_type = 'driver' AND captured_via = 'monitor'
-    AND route_from IS NOT NULL AND route_to IS NOT NULL
   ORDER BY captured_at DESC
   LIMIT @limit`);
 const promoteCandidatesCountStmt = db.prepare(`
   SELECT COUNT(*) n FROM posts
-  WHERE kind = 'post' AND user_type = 'driver' AND captured_via = 'monitor'
-    AND route_from IS NOT NULL AND route_to IS NOT NULL`);
+  WHERE kind = 'post' AND user_type = 'driver' AND captured_via = 'monitor'`);
 
 const queries = {
   // today = YYYY-MM-DD (Tbilisi). The trust rule is load-bearing: FB hides post

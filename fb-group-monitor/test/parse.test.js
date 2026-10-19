@@ -124,6 +124,19 @@ route("qutaisidan tb_shi ro gamiyolot", "Kutaisi", "Tbilisi");
 route("თბდან ბათუმში გავდივარ", "Tbilisi", "Batumi");
 route("რუსთავში თუ მიდის ვინმე ნუცუბიძიდან ??", "Tbilisi", "Rustavi");
 route("მოწითბო მანქანა ქუთაისში", null, "Kutaisi"); // abbreviation must be a word
+route("გავიყოლებ თბილიდან ბოლნისში", "Tbilisi", "Bolnisi");
+route("Hello , 21 ში გავდივარ თბილიდიდან დასავლეთის მიმართულებით გავიყოლებ 2 მგზავრს უსასყოდლოდ", "Tbilisi", "West");
+route("დღეს ღამე გვიან გავდივარ თბილისში", null, "Tbilisi"); // no origin in the text
+route("თბილი ამინდია ბათუმში", null, "Batumi"); // warm weather is not Tbilisi
+check("October 21 departure survives a misspelled Tbilisi origin", () => {
+  const p = enrich({ text: "Hello , 21 ში გავდივარ თბილიდიდან დასავლეთის მიმართულებით გავიყოლებ 2 მგზავრს უსასყოდლოდ",
+    capturedAt: "2026-10-20T12:00:00+04:00" });
+  assert.deepStrictEqual([p.userType, p.routeFrom, p.routeTo, p.departureDate], ["driver", "Tbilisi", "West", "2026-10-21"]);
+});
+check("today late-night departure has a date but no invented origin", () => {
+  const p = enrich({ text: "დღეს ღამე გვიან გავდივარ თბილისში", capturedAt: "2026-10-20T12:00:00+04:00" });
+  assert.deepStrictEqual([p.userType, p.routeFrom, p.routeTo, p.departureDate], ["driver", null, "Tbilisi", "2026-10-20"]);
+});
 
 // ---- driver / passenger ----
 type("ქუთაისიდან თბილისში თუ მოდიხართ ვინმე შემიძლია გაგიყოლოთ", "driver");

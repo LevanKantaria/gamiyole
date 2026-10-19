@@ -113,7 +113,9 @@ function renderCandidates(d, refreshSecs = 0) {
         ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">post↗</a>` : "—";
       const cap = (it.captured || "").slice(5, 16).replace("T", " "); // MM-DD HH:MM
       // "Ureki (Batumi)" when a place is grouped under the site's nearest city
-      const place = (p, site) => esc(p) + (site && site !== p ? ` <small style="color:#65676b">(${esc(site)})</small>` : "");
+      const place = (p, site) => p
+        ? esc(p) + (site && site !== p ? ` <small style="color:#65676b">(${esc(site)})</small>` : "")
+        : '<small style="color:#b91c1c">not found</small>';
       return `<tr class="${it.verdict}">
         <td>${badge}</td>
         <td>${place(it.from, it.siteFrom)} → ${place(it.to, it.siteTo)}</td>
@@ -139,7 +141,7 @@ function renderCandidates(d, refreshSecs = 0) {
   </style>
   <h1>Promote inspector <small style="color:#65676b">— today ${esc(d.today)}</small></h1>
   <div class="sum" style="color:#65676b;font-size:12px">${refreshNote}</div>
-  <div class="sum">showing newest <b>${d.shown}</b> of <b>${d.total}</b> driver-route posts (freshest crawl first) · <b style="color:#15803d">${d.qualified} qualified</b> · rejected: ${reasons || "none"}</div>
+  <div class="sum">showing newest <b>${d.shown}</b> of <b>${d.total}</b> driver posts, including incomplete routes (freshest capture first) · <b style="color:#15803d">${d.qualified} qualified</b> · rejected: ${reasons || "none"}</div>
   <table><thead><tr><th>verdict</th><th>route</th><th>date</th><th>date&nbsp;src</th><th>seen&nbsp;via</th><th>captured</th><th>link</th><th>text</th></tr></thead>
   <tbody>${rows}</tbody></table>`;
 }
